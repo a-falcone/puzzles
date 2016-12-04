@@ -1,0 +1,123 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+chomp( my @items = reverse <DATA> );
+my ($minqe, $minl) = (200**scalar @items, scalar @items);
+my $groups = 4;
+my $total = 0;
+$total += $_ for @items;
+die "Groups can't be even" if $total % $groups;
+my $target = $total / $groups;
+
+findit( $groups, 0, \@items, [], [] );
+
+
+sub findit {
+    my ( $groups, $total, $remaining, $used, $unused ) = @_;
+    #print "findit( $groups, $total, @$remaining, @$used, @$unused )\n";
+    return 0 if $total > $target;
+    return 0 unless $groups;
+    return 0 if scalar @$used > $minl;
+    if ( $total == $target ) {
+        if ( divides( $groups - 1, [@$remaining, @$unused] ) ) {
+            my $qe = 1; $qe *= $_ for @$used;
+            if ( scalar @$used < $minl ) {
+                $minl = scalar @$used;
+                $minqe = $qe;
+            } elsif ( scalar @$used == $minl ) {
+                $minqe = $qe < $minqe ? $qe : $minqe;
+            }
+            print "$minl, $minqe\n";
+            return 1;
+        }
+        return 0;
+
+    }
+    return 0 unless @$remaining;
+    my $item = shift @$remaining;
+    findit( $groups, $total + $item, [@$remaining], [$item, @$used], [@$unused] );
+    findit( $groups, $total, [@$remaining], [@$used], [$item, @$unused] );
+}
+
+sub divides {
+    my ( $groups, $set ) = @_;
+    return 0 unless $groups;
+    return 1 if 1 == $groups;
+    my $total = 0;
+    $total += $_ for @$set;
+    return 0 if $total % $groups;
+    my $target = $total / $groups;
+    subsets( $set, 1 );
+    while ( my $subset = subsets( $set ) ) {
+        my $subtotal = 0;
+        $subtotal += $_ for @$subset;
+        if ( $subtotal == $target ) {
+            return 1 if divides ( $groups - 1, setdifference( $set, $subset ) );
+        }
+    }
+    return 0;
+}
+
+sub setdifference {
+    my ( $firstset, $secondset ) = @_;
+    my %a;
+    $a{$_} = 1 for @$firstset;
+    delete $a{$_} for @$secondset;
+    my @tmp = keys %a;
+    return \@tmp;
+}
+
+{
+    my %sets;
+    sub subsets {
+        if ( 2 == scalar @_ ) {
+            $sets{ $_[0] } = 0;
+            return undef;
+        } elsif ( 1 == scalar @_ ) {
+            my @set = @{ $_[0] };
+            my $r = $sets{ $_[0] }++;
+            return undef if $r > 2**scalar(@set) - 1;
+            my $c = 0;
+            my @newset;
+            while ( $r ) {
+                push( @newset, $set[$c] ) if $r % 2;
+                $r >>= 1;
+                $c++;
+            }
+            return \@newset;
+        }
+    }
+}
+
+__DATA__
+1
+2
+3
+5
+7
+13
+17
+19
+23
+29
+31
+37
+41
+43
+53
+59
+61
+67
+71
+73
+79
+83
+89
+97
+101
+103
+107
+109
+113

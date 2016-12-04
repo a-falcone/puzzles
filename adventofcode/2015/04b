@@ -1,0 +1,18 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use Digest::MD5 qw(md5_hex);
+
+my $t = "yzbqklnj";
+
+my $n = 1;
+
+while( 1 ) {
+    my $md5 = md5_hex("$t$n");
+    print "$n: $md5\n" if $n % 10000 == 0;
+    last if $md5 =~ /^000000/;
+    $n++;
+}
+
+print "$n\n";

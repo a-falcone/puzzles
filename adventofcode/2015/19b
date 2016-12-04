@@ -1,0 +1,83 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+my ( @r, $original );
+
+while (<DATA>) {
+    chomp;
+    next unless $_;
+    if ( my ($src, $dest) = /^(.*) => (.*)$/ ) {
+        push @r, [$src, $dest];
+    } else {
+        $original = $_;
+    }
+}
+
+print reduce( $original ) . "\n";
+
+sub reduce {
+    my $target = shift;
+    return 0 if $target eq "e";
+
+    for ( @r ) {
+        my $copy = $target;
+        my $result;
+        if ( $copy =~ s/$_->[1]/$_->[0]/ ) {
+            $result = reduce($copy);
+            if ( $result >= 0 ) {
+                return ($result + 1);
+            }
+        }
+    }
+    
+    return -1;
+}
+
+__DATA__
+Al => ThF
+Al => ThRnFAr
+B => BCa
+B => TiB
+B => TiRnFAr
+Ca => CaCa
+Ca => PB
+Ca => PRnFAr
+Ca => SiRnFYFAr
+Ca => SiRnMgAr
+Ca => SiTh
+F => CaF
+F => PMg
+F => SiAl
+H => CRnAlAr
+H => CRnFYFYFAr
+H => CRnFYMgAr
+H => CRnMgYFAr
+H => HCa
+H => NRnFYFAr
+H => NRnMgAr
+H => NTh
+H => OB
+H => ORnFAr
+Mg => BF
+Mg => TiMg
+N => CRnFAr
+N => HSi
+O => CRnFYFAr
+O => CRnMgAr
+O => HP
+O => NRnFAr
+O => OTi
+P => CaP
+P => PTi
+P => SiRnFAr
+Si => CaSi
+Th => ThCa
+Ti => BP
+Ti => TiTi
+e => HF
+e => NAl
+e => OMg
+
+CRnCaCaCaSiRnBPTiMgArSiRnSiRnMgArSiRnCaFArTiTiBSiThFYCaFArCaCaSiThCaPBSiThSiThCaCaPTiRnPBSiThRnFArArCaCaSiThCaSiThSiRnMgArCaPTiBPRnFArSiThCaSiRnFArBCaSiRnCaPRnFArPMgYCaFArCaPTiTiTiBPBSiThCaPTiBPBSiRnFArBPBSiRnCaFArBPRnSiRnFArRnSiRnBFArCaFArCaCaCaSiThSiThCaCaPBPTiTiRnFArCaPTiBSiAlArPBCaCaCaCaCaSiRnMgArCaSiThFArThCaSiThCaSiRnCaFYCaSiRnFYFArFArCaSiRnFYFArCaSiRnBPMgArSiThPRnFArCaSiRnFArTiRnSiRnFYFArCaSiRnBFArCaSiRnTiMgArSiThCaSiThCaFArPRnFArSiRnFArTiTiTiTiBCaCaSiRnCaCaFYFArSiThCaPTiBPTiBCaSiThSiRnMgArCaF

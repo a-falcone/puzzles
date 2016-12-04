@@ -1,0 +1,87 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+chomp (my @i = <DATA>);
+
+my %r = ( a => 1 );
+
+my $index = 0;
+
+while ( $index >= 0 && $index < @i ) {
+    my ($address, $offset);
+    if ( ($address) = $i[$index] =~ /^hlf (\w+)$/ ) {
+        $r{$address} ||= 0;
+        $r{$address} >>= 1;
+    } elsif ( ($address) = $i[$index] =~ /^tpl (\w+)$/ ) {
+        $r{$address} ||= 0;
+        $r{$address} *= 3;
+    } elsif ( ($address) = $i[$index] =~ /^inc (\w+)$/ ) {
+        $r{$address}++;
+    } elsif ( ($offset) = $i[$index] =~ /^jmp ([-+]\d+)$/ ) {
+        $index += $offset;
+        next;
+    } elsif ( ($address, $offset) = $i[$index] =~ /^jie (\w+), ([-+]\d+)$/ ) {
+        $r{$address} ||= 0;
+        $index += $r{$address} % 2 ? 1 : $offset;
+        next;
+    } elsif ( ($address, $offset) = $i[$index] =~ /^jio (\w+), ([-+]\d+)$/ ) {
+        $r{$address} ||= 0;
+        $index += $r{$address} == 1 ? $offset : 1;
+        next;
+    } else {
+        die "Unknown instruction $i[$index]\n";
+    }
+    $index++;
+}
+
+print "$_ -> $r{$_}\n" for keys %r;
+
+__DATA__
+jio a, +16
+inc a
+inc a
+tpl a
+tpl a
+tpl a
+inc a
+inc a
+tpl a
+inc a
+inc a
+tpl a
+tpl a
+tpl a
+inc a
+jmp +23
+tpl a
+inc a
+inc a
+tpl a
+inc a
+inc a
+tpl a
+tpl a
+inc a
+inc a
+tpl a
+inc a
+tpl a
+inc a
+tpl a
+inc a
+inc a
+tpl a
+inc a
+tpl a
+tpl a
+inc a
+jio a, +8
+inc b
+jie a, +4
+tpl a
+inc a
+jmp +2
+hlf a
+jmp -7

@@ -1,0 +1,13 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+my $string = 1321131112;
+
+for (1..40) {
+    $string =~ s/((.)\2*)/(length $1). $2/ge;
+}
+
+print length $string;
+print "\n";

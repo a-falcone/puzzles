@@ -1,0 +1,88 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+my $spells = { Missle =>   {Cost => 53, Cooldown => 0, Damage => 4},
+               Drain =>    {Cost => 73, Cooldown => 0, Damage => 2, Heal => 2},
+               Shield =>   {Cost => 113, Cooldown => 6, Armor => 7},
+               Poison =>   {Cost => 173, Cooldown => 6, Damage => 3},
+               Recharge => {Cost => 229, Cooldown => 5, Mana => 101},
+             };
+
+my $playerhp = 50;
+my $playermana = 500;
+my $bosshp = 71;
+my $bossdamage = 10;
+
+print fight($playerhp, $bosshp, $playermana, 0, 0, 0, 0) . "\n";
+
+sub fight {
+    my ($php, $bhp, $pmana, $scool, $pcool, $rcool, $manaspent) = @_;
+    if ($rcool) {
+        $rcool--;
+        $pmana += $spells->{Recharge}{Mana};
+    }
+    if ($pcool) {
+        $pcool--;
+        $bhp -= $spells->{Poison}{Damage};
+        return $manaspent if $bhp <= 0;
+    }
+    if ($scool) {
+        $scool--;
+    }
+    my $minmana = 10**9;
+    for my $spell ( keys %$spells ) {
+        my ($tphp, $tbhp) = ($php, $bhp);
+        my ($tmanaspent, $tpmana) = ($manaspent, $pmana);
+        my ($trcool, $tscool, $tpcool) = ($rcool, $scool, $pcool);
+        next if $spells->{$spell}{Cost} > $tpmana;
+        next if $trcool && $spell eq "Recharge";
+        next if $tscool && $spell eq "Shield";
+        next if $tpcool && $spell eq "Poison";
+        $tmanaspent += $spells->{$spell}{Cost};
+        $tpmana -= $spells->{$spell}{Cost};
+        ##player turn
+        if ( $spell eq "Missle" ) {
+            $tbhp -= $spells->{Missle}{Damage};
+        } elsif ( $spell eq "Drain" ) {
+            $tbhp -= $spells->{Drain}{Damage};
+            $tphp += $spells->{Drain}{Heal};
+        } elsif ( $spell eq "Shield" ) {
+            $tscool = $spells->{Shield}{Cooldown};
+        } elsif ( $spell eq "Poison" ) {
+            $tpcool = $spells->{Poison}{Cooldown};
+        } elsif ( $spell eq "Recharge" ) {
+            $trcool = $spells->{Recharge}{Cooldown};
+        }
+        if ($tbhp <= 0) {
+            $minmana = $tmanaspent < $minmana ? $tmanaspent : $minmana;
+            next;
+        }
+        ##boss turn
+        if ($trcool) {
+            $trcool--;
+            $tpmana += $spells->{Recharge}{Mana};
+        }
+        if ($tpcool) {
+            $tpcool--;
+            $tbhp -= $spells->{Poison}{Damage};
+            if ($tbhp <= 0) {
+                $minmana = $tmanaspent < $minmana ? $tmanaspent : $minmana;
+                next;
+            }
+        }
+        my $playerarmor = 0;
+        if ($tscool) {
+            $tscool--;
+            $playerarmor = $spells->{Shield}{Armor};
+        }
+
+        $tphp -= $bossdamage - $playerarmor <= 0 ? 1 : $bossdamage - $playerarmor;
+        next if $tphp <= 0;
+        ##keep fighting
+        my $result = fight($tphp, $tbhp, $tpmana, $tscool, $tpcool, $trcool, $tmanaspent);
+        $minmana = $result < $minmana ? $result : $minmana;
+    }
+    return $minmana;
+}

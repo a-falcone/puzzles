@@ -1,0 +1,23 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+my $a = 1;
+
+$a++ while (33100000 > 10*sumoffactors($a));
+
+print "$a\n";
+
+sub sumoffactors {
+    my $n = shift;
+    my $total = $n + 1;
+    for my $i ( 2..(int( sqrt $n )) ) {
+        if ( 0 == $n % $i ) {
+            my $d = $n / $i;
+            $total += $i + $d;
+            $total -= $d if $d == $i;
+        }
+    }
+    return $total;
+}

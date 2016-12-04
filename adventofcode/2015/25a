@@ -1,0 +1,18 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+my $initial = 20151125;
+
+for ( 2..rowc( 3019, 3010 ) ) {
+    $initial = ( $initial * 252533 ) % 33554393;
+}
+
+print "$initial\n";
+
+sub rowc {
+    my ($x, $y) = @_;
+    my $diag = $x + $y - 1;
+    $diag = $diag * ($diag + 1) / 2 - $y + 1;
+}

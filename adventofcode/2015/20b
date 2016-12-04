@@ -1,0 +1,23 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+my $a = 2500;
+
+$a++ while (33100000 > 11*sumoffactors($a));
+
+print "$a\n";
+
+sub sumoffactors {
+    my $n = shift;
+    my $total = $n;
+    my $factorsfound = 1;
+    for my $i ( 2..50 ) {
+        if ( 0 == $n % $i ) {
+            my $d = $n / $i;
+            $total += $d;
+        }
+    }
+    return $total;
+}

@@ -1,0 +1,75 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+my @weapons = ( {Name => "Dagger", Cost => 8, Damage => 4},
+                {Name => "Shortsword", Cost => 10, Damage => 5},
+                {Name => "Warhammer", Cost => 25, Damage => 6},
+                {Name => "Longsword", Cost => 40, Damage => 7},
+                {Name => "Greataxe", Cost => 74, Damage => 8},
+              );
+
+my @armors =  ( {Name => "Nothing", Cost => 0, Armor => 0},
+                {Name => "Leather", Cost => 13, Armor => 1},
+                {Name => "Chainmail", Cost => 31, Armor => 2},
+                {Name => "Splintmail", Cost => 53, Armor => 3},
+                {Name => "Bandedmail", Cost => 75, Armor => 4},
+                {Name => "Platemail", Cost => 102, Armor => 5},
+              );
+
+my @rings =   ( {Name => 0, Cost => 0, Damage => 0, Armor => 0},
+                {Name => 1, Cost => 25, Damage => 1, Armor => 0},
+                {Name => 2, Cost => 50, Damage => 2, Armor => 0},
+                {Name => 3, Cost => 100, Damage => 3, Armor => 0},
+                {Name => 4, Cost => 20, Damage => 0, Armor => 1},
+                {Name => 5, Cost => 40, Damage => 0, Armor => 2},
+                {Name => 6, Cost => 80, Damage => 0, Armor => 3},
+              );
+
+my $playerhp = 100;
+my $playerdamage = 0;
+my $playerarmor = 0;
+my $bosshp = 100;
+my $bossdamage = 8;
+my $bossarmor = 2;
+
+my $mincost = 99999999999999999;
+
+for my $armor ( @armors ) {
+    for my $weapon ( @weapons ) {
+        my $cost = $armor->{Cost} + $weapon->{Cost};
+        $playerdamage = $weapon->{Damage};
+        $playerarmor = $armor->{Armor};
+        if ( fight( $playerhp, $playerdamage, $playerarmor, $bosshp, $bossdamage, $bossarmor ) ) {
+            $mincost = $cost if $cost < $mincost;
+        }
+        for my $ring1 ( @rings ) {
+            for my $ring2 ( @rings ) {
+                my $tempcost = $cost + $ring1->{Cost} + $ring2->{Cost};
+                my $tempdamage = $playerdamage + $ring1->{Damage} + $ring2->{Damage};
+                my $temparmor = $playerarmor + $ring1->{Armor} + $ring2->{Armor};
+                next if $ring1->{Name} <= $ring2->{Name};
+                if ( fight( $playerhp, $tempdamage, $temparmor, $bosshp, $bossdamage, $bossarmor ) ) {
+                    $mincost = $tempcost if $tempcost < $mincost;
+                }
+            }
+        }
+    }
+}
+
+print "$mincost\n";
+
+sub fight {
+    my ($php, $pd, $pa, $bhp, $bd, $ba) = @_;
+    $pd -= $ba;
+    $pd = 1 if $pd <= 0;
+    $bd -= $pa;
+    $bd = 1 if $bd <= 0;
+    while ( 1 ) {
+       $bhp -= $pd;
+       return 1 if $bhp <= 0; 
+       $php -= $bd;
+       return 0 if $php <= 0; 
+    }
+}

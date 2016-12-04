@@ -1,0 +1,16 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+my $pass = "cqjxxyzz";
+
+while (1) {
+    $pass++;
+    next unless $pass =~ /abc|bcd|cde|def|efg|fgh|ghi|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz/;
+    next if $pass =~ /[ilo]/;
+    next unless $pass =~ /(.)\1.*(.)\2/;
+    last;
+}
+
+print "$pass\n";

@@ -1,0 +1,47 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+my @a = map( $_, <DATA> );
+chomp @a;
+
+my $target = $ARGV[0] || 150;
+my $count = 0;
+
+for my $i (0..(2**scalar(@a)) - 1) {
+    my $r = $i;
+    my $bag = 0;
+    my $a = 0;
+    while ($r) {
+       $bag += $a[$a] if $r % 2 == 1;
+       last if $bag > $target;
+       $r >>= 1;
+       $a++;
+    }
+    $count++ if $bag == $target;
+}
+
+print "$count\n";
+
+__DATA__
+11
+30
+47
+31
+32
+36
+3
+1
+5
+3
+32
+36
+15
+11
+46
+26
+28
+1
+19
+3
