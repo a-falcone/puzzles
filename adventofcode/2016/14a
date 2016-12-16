@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+
 #In order to communicate securely with Santa while you're on this mission, you've been using a one-time pad that you generate using a pre-agreed algorithm. Unfortunately, you've run out of keys in your one-time pad, and so you need to generate some more.
 #
 #To generate keys, you first get a stream of random data by taking the MD5 of a pre-arranged salt (your puzzle input) and an increasing integer index (starting with 0, and represented in decimal); the resulting MD5 hash should be represented as a string of lowercase hexadecimal digits.
@@ -29,11 +30,11 @@ my $keys = 0;
 
 my @a;
 
-for (my $x = 1; $x <= 1000; $x++) {
+for (my $x = 0; $x <= 1000; $x++) {
     $a[$x] = md5_hex( "$salt$x" );
 }
 
-for (my $i = 1; $keys < 64; $i++) {
+for (my $i = 0; $keys < 64; $i++) {
     if (check_key($salt, $i)) {
         $keys++;
     }
