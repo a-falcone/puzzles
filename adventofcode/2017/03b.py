@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python3
 
 """
 --- Day 3: Spiral Memory ---
@@ -89,4 +89,4 @@ while (i < 277678):
       dir = 'r'
       miny -= 1
       continue
-print i
+print( i )

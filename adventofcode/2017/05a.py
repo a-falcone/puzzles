@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python3
 
 """
 --- Day 5: A Maze of Twisty Trampolines, All Alike ---
@@ -40,4 +40,4 @@ while (index >= 0 and index < len(data)):
   index += data[index] - 1
   steps += 1
 
-print steps
+print( steps )

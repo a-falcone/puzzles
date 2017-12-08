@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python3
 
 """
 --- Day 4: High-Entropy Passphrases ---
@@ -543,4 +543,4 @@ for line in data.splitlines():
     continue
   valid += 1
 
-print valid
+print( valid )

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python3
 
 """
 --- Day 3: Spiral Memory ---
@@ -64,4 +64,4 @@ for d in data:
         dir = 'r'
         miny -= 1
         continue
-  print d, abs(loc[0]) + abs(loc[1])
+  print( d, abs(loc[0]) + abs(loc[1]) )

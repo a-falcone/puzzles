@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python3
 
 """
 --- Day 6: Memory Reallocation ---
@@ -43,4 +43,4 @@ while (",".join(map(str, data)) not in seen):
   for i in range(1, maxval + 1):
     data[(i + maxloc) % len(data)] += 1
 
-print seen[",".join(map(str, data))]
+print( seen[",".join(map(str, data))] )

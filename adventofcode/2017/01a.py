@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python3
 
 """
 --- Day 1: Inverse Captcha ---
@@ -32,4 +32,4 @@ for line in DATA:
   for x in range(0, len(digits) - 1):
     if digits[x - 1] == digits[x]:
       sum += digits[x]
-  print sum
+  print( sum )

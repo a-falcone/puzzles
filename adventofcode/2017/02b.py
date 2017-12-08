@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python3
 
 """
 --- Day 2: Corruption Checksum ---
@@ -62,7 +62,7 @@ checksum = 0
 data = data.splitlines()
 
 for line in data:
-  n = map(int, line.split())
+  n = list(map(int, line.split()))
   for i in range(0, len(n)):
     for j in range(i + 1, len(n)):
       if 0 == (n[i] % n[j]) * (n[j] % n[i]):
@@ -72,4 +72,4 @@ for line in data:
       continue
     break
 
-print checksum
+print( checksum )

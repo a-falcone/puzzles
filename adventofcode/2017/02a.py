@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python3
 
 """
 --- Day 2: Corruption Checksum ---
@@ -52,4 +52,4 @@ for line in data:
       max = d
   checksum += max - min
 
-print checksum
+print( checksum )
