@@ -42,4 +42,14 @@ To get a significant sample, the judge would like to consider 40 million pairs. 
 After 40 million pairs, what is the judge's final count?
 """
 
+aseed = 634
+bseed = 301
 
+count = 0
+for i in range(4 * 10**7):
+    aseed = (aseed * 16807) % 2147483647
+    bseed = (bseed * 48271) % 2147483647
+    if (aseed % (2**16) == bseed % (2**16)):
+        count += 1
+
+print( count )

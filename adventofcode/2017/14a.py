@@ -31,4 +31,45 @@ Given your actual key string, how many squares are used?
 Your puzzle input is jxqlasbh.
 """
 
+import re
 
+testdata="flqrgnkx"
+data="jxqlasbh"
+
+def knothash( instring ):
+    s = [ord(l) for l in instring]
+    s.append(17)
+    s.append(31)
+    s.append(73)
+    s.append(47)
+    s.append(23)
+    a = [i for i in range(256)]
+    pos = skip = 0
+
+    for _ in range(64):
+        for l in s:
+            end = (pos + l - 1) % len( a )
+            for i in range(0, l // 2):
+                a[end - i], a[end - l + 1 + i] = a[end - l + 1 + i], a[end - i]
+
+            pos += (l + skip) % len( a )
+            skip += 1
+    dense=""
+
+    for i in range(16):
+        temp = 0
+        for j in range(16):
+            temp ^= a[16*i + j]
+        dense += "%8s" % format(temp, 'b')
+
+        dense = re.sub("[ 0]", ".", dense)
+        dense = re.sub("1", "#", dense)
+
+    return dense
+
+count = 0
+for i in range(128):
+    hashed = knothash(data + "-" + str(i))
+    count += hashed.count("#")
+    
+print( count )

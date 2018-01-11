@@ -47,29 +47,29 @@ testdata=["0 <-> 2",
           "5 <-> 6",
           "6 <-> 4, 5"]
 
-f=open("data/11.data", "r")
+f = open("data/12.data", "r")
 
-nodes={}
+nodes = {}
 
-def distance(x, y):
-    if x == y:
-        return 0
-    if nodes[x][y] != nodes[y][x]:
-        print( x, y, nodes[x][y], nodes[y][x] )
-        system.exit(0)
-    return nodes[x][y]
-
-for line in testdata:
-    line = re.sub(",", "", line)
-    (src, _, *dest) = line.split()
+for line in f:
+#for line in testdata:
+    line = re.sub( ",", "", line )
+    (src, _, *sink) = line.split()
     if src not in nodes:
         nodes[src] = {}
-    for d in dest:
-        if d not in nodes:
-            nodes[d] = {}
-        if src == d:
+    nodes[src][src] = 0
+    for s in sink:
+        if s == src:
             continue
-        nodes[src][d] = 1
-        nodes[d][src] = 1
-    for d in nodes[src]:
-        for 
+        nodes[src][s] = 1
+        if s not in nodes:
+            nodes[s] = {}
+        nodes[s][src] = 1
+
+    for remote in nodes[src]:
+        for remote2 in nodes[src]:
+            if remote == remote2:
+                continue
+            nodes[remote][remote2] = nodes[remote2][remote] = 1
+
+print( len(nodes['0']) )

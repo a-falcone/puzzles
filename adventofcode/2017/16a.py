@@ -22,4 +22,37 @@ After finishing their dance, the programs end up in order baedc.
 You watch the dance for a while and record their dance moves (your puzzle input). In what order are the programs standing after their dance?
 """
 
+import re
 
+def find( dancers, dancer1, dancer2 ):
+    for i in range(len(dancers)):
+        if dancers[i] == dancer1:
+            pos1 = i
+        if dancers[i] == dancer2:
+            pos2 = i
+    return pos1, pos2
+
+
+data = open( "data/16.data", "r" )
+#data = ["s1,x3/4,pe/b"]
+
+group = [ "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p" ]
+#group = [ "a", "b", "c", "d", "e" ]
+
+count = 0
+for line in data:
+    for move in line.split(","):
+        if move[0] == "s":
+            spin = int(re.findall("\d+", move)[0])
+            tail = group[-1 * spin:]
+            del(group[-1 * spin:])
+            group[0:0] = tail
+        elif move[0] == "x":
+            pos1, pos2 = re.findall("\d+", move)
+            group[int(pos1)], group[int(pos2)] = group[int(pos2)], group[int(pos1)]
+        elif move[0] == "p":
+            dancer1, dancer2 = move[1], move[3]
+            pos1, pos2 = find(group, dancer1, dancer2)
+            group[int(pos1)], group[int(pos2)] = group[int(pos2)], group[int(pos1)]
+
+print( "".join(group) )
