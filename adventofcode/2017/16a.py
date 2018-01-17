@@ -33,13 +33,11 @@ def find( dancers, dancer1, dancer2 ):
     return pos1, pos2
 
 
+data = ["s1,x3/4,pe/b"]
+group = list( "abcde" )
 data = open( "data/16.data", "r" )
-#data = ["s1,x3/4,pe/b"]
+group = list( "abcdefghijklmnop" )
 
-group = [ "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p" ]
-#group = [ "a", "b", "c", "d", "e" ]
-
-count = 0
 for line in data:
     for move in line.split(","):
         if move[0] == "s":

@@ -88,9 +88,29 @@ def knothash( instring ):
 
     return dense
 
+def del_neighbors( x, y ):
+    a[x][y] = "8"
+    if ( x > 0 ) and (a[x - 1][y] == "#"):
+        del_neighbors(x - 1, y)
+    if ( x < 127 ) and (a[x + 1][y] == "#"):
+        del_neighbors(x + 1, y)
+    if ( y > 0 ) and (a[x][y - 1] == "#"):
+        del_neighbors(x, y - 1)
+    if ( y < len(a[x]) - 1 ) and (a[x][y + 1] == "#"):
+        del_neighbors(x, y + 1)
+
 count = 0
+
+a=[]
+
 for i in range(128):
-    hashed = knothash(data + "-" + str(i))
-    count += hashed.count("#")
+    a.append(list(knothash(data + "-" + str(i))))
     
+for i in range(128):
+    for j in range(len(a[i])):
+        if a[i][j] == "#":
+            count += 1
+            del_neighbors(i,j)
+
+
 print( count )

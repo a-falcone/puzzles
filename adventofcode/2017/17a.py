@@ -34,4 +34,5 @@ What is the value after 2017 in your completed circular buffer?
 Your puzzle input is 367.
 """
 
-
+step=3
+step=367
