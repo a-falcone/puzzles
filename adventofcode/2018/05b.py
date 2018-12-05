@@ -50,8 +50,8 @@ for line in DATA:
     line = line.strip()
     minimum = len(line)
     for char in string.ascii_lowercase:
-        tempstring = re.sub(char, '', line)
-        tempstring = re.sub(char.upper(), '', tempstring)
+        reg = re.compile(char, re.IGNORECASE)
+        tempstring = reg.sub('', line)
         i = 0
         while( i < len(tempstring) - 1 ):
             if tempstring[i].upper() == tempstring[i+1].upper() and tempstring[i] != tempstring[i+1]:
