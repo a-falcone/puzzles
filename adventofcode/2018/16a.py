@@ -62,3 +62,106 @@ You collect many of these samples (the first section of your puzzle input). The 
 
 Ignoring the opcode numbers, how many samples in your puzzle input behave like three or more opcodes?
 """
+
+def addr(reg, a,b,c):
+    t = reg.copy()
+    t[c] = t[a] + t[b]
+    return t
+
+def addi(reg, a,b,c):
+    t = reg.copy()
+    t[c] = t[a] + b
+    return t
+
+def mulr(reg, a,b,c):
+    t = reg.copy()
+    t[c] = t[a] * t[b]
+    return t
+
+def muli(reg, a,b,c):
+    t = reg.copy()
+    t[c] = t[a] * b
+    return t
+
+def banr(reg, a,b,c):
+    t = reg.copy()
+    t[c] = t[a] & t[b]
+    return t
+
+def bani(reg, a,b,c):
+    t = reg.copy()
+    t[c] = t[a] & b
+    return t
+
+def borr(reg, a,b,c):
+    t = reg.copy()
+    t[c] = t[a] | t[b]
+    return t
+
+def bori(reg, a,b,c):
+    t = reg.copy()
+    t[c] = t[a] | b
+    return t
+
+def setr(reg, a,b,c):
+    t = reg.copy()
+    t[c] = t[a]
+    return t
+
+def seti(reg, a,b,c):
+    t = reg.copy()
+    t[c] = a
+    return t
+
+def gtir(reg, a,b,c):
+    t = reg.copy()
+    t[c] = 1 if a > t[b] else 0
+    return t
+
+def gtri(reg, a,b,c):
+    t = reg.copy()
+    t[c] = 1 if t[a] > b else 0
+    return t
+
+def gtrr(reg, a,b,c):
+    t = reg.copy()
+    t[c] = 1 if t[a] > t[b] else 0
+    return t
+
+def eqir(reg, a,b,c):
+    t = reg.copy()
+    t[c] = 1 if a == t[b] else 0
+    return t
+
+def eqri(reg, a,b,c):
+    t = reg.copy()
+    t[c] = 1 if t[a] == b else 0
+    return t
+
+def eqrr(reg, a,b,c):
+    t = reg.copy()
+    t[c] = 1 if t[a] == t[b] else 0
+    return t
+
+f = [addr, addi, mulr, muli, banr, bani, borr, bori, setr, seti, gtir, gtri, gtrr, eqir, eqri, eqrr]
+
+import re
+
+DATA = open("16.data","r")
+
+answer = 0
+
+for line in DATA:
+    if re.match("Before", line):
+        startreg = list(map(int,re.findall("\d+", line)))
+        (op,rega,regb,regc) = list(map(int,re.findall("\d+", DATA.readline())))
+        endreg = list(map(int,re.findall("\d+", DATA.readline())))
+    else:
+        continue
+    matches = 0
+    for i in range(len(f)):
+        if endreg == f[i](startreg, rega, regb, regc):
+            matches += 1
+    if matches >= 3:
+        answer += 1
+print(answer)
