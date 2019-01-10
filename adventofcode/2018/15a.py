@@ -1,5 +1,8 @@
 #!/usr/local/bin/python3
 
+import sys
+Debug = False
+
 """
 --- Day 15: Beverage Bandits ---
 Having perfected their hot chocolate, the Elves have a new problem: the Goblins that live in these caves will do anything to steal it. Looks like they're here for a fight.
@@ -274,3 +277,149 @@ Goblins win with 937 total hit points left
 Outcome: 20 * 937 = 18740
 What is the outcome of the combat described in your puzzle input?
 """
+
+if len(sys.argv) > 1:
+    DATA = open("tests/%s/input.txt" % sys.argv[1], "r")
+else:
+    DATA = open("15.data","r")
+DATA = ["#######", "#G..#E#", "#E#E.E#", "#G.##.#", "#...#E#", "#...E.#", "#######"] 
+#DATA = ["#######", "#E..EG#", "#.#G.E#", "#E.##E#", "#G..#.#", "#..E#.#", "#######"]
+#DATA = ["#######", "#E.G#.#", "#.#G..#", "#G.#.G#", "#G..#.#", "#...E.#", "#######"]
+#DATA = ["#######", "#.E...#", "#.#..G#", "#.###.#", "#E#G#G#", "#...#G#", "#######"]
+#DATA = ["#########", "#G......#", "#.E.#...#", "#..##..G#", "#...##..#", "#...#...#", "#.G...G.#", "#.....G.#", "#########"]
+
+field = {}
+meat = {}
+
+idnum = 0
+startinghp = {"G": 200, "E": 200}
+attackpower = {"G": 3, "E": 3}
+(TYPE, LOC, HP) = ("type", "loc", "hp")
+
+y = 0
+for line in DATA:
+    line = line.rstrip()
+    x = 0
+    for char in line:
+        if char == "#":
+            field[(y,x)] = "#"
+        elif char == "G" or char == "E":
+            meat[idnum] = {TYPE: char, HP: startinghp[char], LOC: (y,x)}
+            field[(y,x)] = idnum
+            idnum += 1
+        x += 1
+    y += 1
+
+MAXX = x
+MAXY = y
+
+def printworld(r):
+    print("After round", r)
+    for y in range(MAXY):
+        endstring = " "
+        for x in range(MAXX):
+            thing = field.get((y,x), ".")
+            if type(thing) == int:
+                print(meat[thing][TYPE], end = "")
+                endstring += "%s[%i]{%i,%i}(%i) " % (meat[thing][TYPE], thing, x, y, meat[thing][HP])
+            else:
+                print(thing, end = "")
+        print(endstring)
+        y += 1
+
+def above(loc):
+    return (loc[0],loc[1] - 1)
+
+def toleft(loc):
+    return (loc[0] - 1,loc[1])
+
+def toright(loc):
+    return (loc[0] + 1,loc[1])
+
+def below(loc):
+    return (loc[0],loc[1] + 1)
+
+def move(idnum):
+    if Debug: print("Calling move(", idnum, ")")
+    seen = set(meat[idnum][LOC])
+    meattype = meat[idnum][TYPE]
+    meathp = meat[idnum][HP]
+    loc = meat[idnum][LOC]
+    points = []
+    for testloc in [above(loc), toleft(loc), toright(loc), below(loc)]:
+        target = field.get(testloc,".")
+        if type(target) == int:
+            if meattype != meat[target][TYPE]:
+                return idnum
+        elif target == ".":
+            #[endpoint, firststep]
+            points.append([testloc,testloc])
+            seen.add(testloc)
+    while(points):
+        if Debug: print("Points:", points)
+        newpoints = []
+        found = [] 
+        for point in points:
+            for testloc in [above(point[0]), toleft(point[0]), toright(point[0]), below(point[0])]:
+                i = field.get(testloc,".")
+                if type(i) == int:
+                    if meattype != meat[i][TYPE]:
+                        found.append(point)
+                elif i == ".":
+                    if testloc not in seen:
+                        seen.add(testloc)
+                        newpoints.append([testloc,point[1]])
+        if Debug: print("Found points:", found)
+        if Debug: print("New points:", newpoints)
+        if found:
+            newloc = tuple(sorted(found, key=lambda elem: elem[0])[0])
+            if Debug: print ("Moving to", newloc[1])
+            if Debug: print()
+            field.pop(meat[idnum][LOC])
+            field[newloc[1]] = idnum
+            meat[idnum][LOC] = newloc[1]
+        points = newpoints
+    return(idnum)
+
+def attack(idnum):
+    minhp = 9**9
+    target = None
+    loc = meat[idnum][LOC]
+    for pt in (above(loc), toleft(loc), toright(loc), below(loc)):
+        tid = field.get(pt, ".")
+        if type(tid) == int:
+            if meat[tid][TYPE] != meat[idnum][TYPE]:
+                if minhp > meat[tid][HP]:
+                    minhp = meat[tid][HP]
+                    target = tid
+    if target:
+        meat[target][HP] -= attackpower[meat[idnum][TYPE]]
+        if meat[target][HP] <= 0:
+            field.pop(meat[target][LOC])
+            meat.pop(target)
+    return idnum
+
+def differentenemies():
+    t = None
+    for m in meat:
+        if not t:
+            t = meat[m][TYPE]
+        elif t != meat[m][TYPE]:
+            return True
+    return False
+
+
+r = 0
+printworld(r)
+while(differentenemies() ):
+    for idnum in sorted(meat.keys(), key=lambda elem: meat[elem][LOC]):
+        if idnum in meat.keys():
+            if not differentenemies():
+                r -= 1
+                break
+            move(idnum)
+            attack(idnum)
+    r += 1
+    printworld(r)
+    input()
+
