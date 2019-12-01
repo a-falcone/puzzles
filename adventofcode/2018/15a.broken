@@ -1,7 +1,7 @@
 #!/usr/local/bin/python3
 
 import sys
-Debug = False
+Debug = True
 
 """
 --- Day 15: Beverage Bandits ---
@@ -290,42 +290,29 @@ else:
 
 field = {}
 meat = {}
+r = 0
+TYPE = "type"
+HP = "hp"
+LOC = "loc"
+attackpower = {"G": 3, "E": 3}
+starthp = {"G": 200, "E": 200}
 
 idnum = 0
-startinghp = {"G": 200, "E": 200}
-attackpower = {"G": 3, "E": 3}
-(TYPE, LOC, HP) = ("type", "loc", "hp")
-
 y = 0
 for line in DATA:
-    line = line.rstrip()
     x = 0
+    line = line.rstrip()
     for char in line:
         if char == "#":
-            field[(y,x)] = "#"
+            field[(x,y)] = "#"
         elif char == "G" or char == "E":
-            meat[idnum] = {TYPE: char, HP: startinghp[char], LOC: (y,x)}
-            field[(y,x)] = idnum
+            meat[idnum] = {TYPE: char, HP: starthp[char], LOC: (x,y)}
             idnum += 1
         x += 1
     y += 1
 
-MAXX = x
-MAXY = y
-
-def printworld(r):
-    print("After round", r)
-    for y in range(MAXY):
-        endstring = " "
-        for x in range(MAXX):
-            thing = field.get((y,x), ".")
-            if type(thing) == int:
-                print(meat[thing][TYPE], end = "")
-                endstring += "%s[%i]{%i,%i}(%i) " % (meat[thing][TYPE], thing, x, y, meat[thing][HP])
-            else:
-                print(thing, end = "")
-        print(endstring)
-        y += 1
+maxx = x
+maxy = y
 
 def above(loc):
     return (loc[0],loc[1] - 1)
@@ -339,87 +326,106 @@ def toright(loc):
 def below(loc):
     return (loc[0],loc[1] + 1)
 
-def move(idnum):
-    if Debug: print("Calling move(", idnum, ")")
-    seen = set(meat[idnum][LOC])
-    meattype = meat[idnum][TYPE]
-    meathp = meat[idnum][HP]
-    loc = meat[idnum][LOC]
+def move(loc):
+    if Debug: print("Calling move(", loc, ")")
+    meattype = meat[loc][TYPE]
+    meathp = meat[loc][HP]
+    meatid = meat[loc][ID]
     points = []
-    for testloc in [above(loc), toleft(loc), toright(loc), below(loc)]:
-        target = field.get(testloc,".")
-        if type(target) == int:
-            if meattype != meat[target][TYPE]:
-                return idnum
-        elif target == ".":
+    dist = {loc: 0}
+    for i in [above(loc), toleft(loc), toright(loc), below(loc)]:
+        if i in meat:
+            if meattype != meat[i][TYPE]:
+                return loc
+        elif i not in field:
             #[endpoint, firststep]
-            points.append([testloc,testloc])
-            seen.add(testloc)
+            points.append([i,i])
+            dist[i] = 1
+    if not points:
+        return loc
+
     while(points):
         if Debug: print("Points:", points)
         newpoints = []
-        found = [] 
+        found = []
         for point in points:
-            for testloc in [above(point[0]), toleft(point[0]), toright(point[0]), below(point[0])]:
-                i = field.get(testloc,".")
-                if type(i) == int:
+            for i in [above(point[0]), toleft(point[0]), toright(point[0]), below(point[0])]:
+                if i in meat:
                     if meattype != meat[i][TYPE]:
                         found.append(point)
-                elif i == ".":
-                    if testloc not in seen:
-                        seen.add(testloc)
-                        newpoints.append([testloc,point[1]])
+                elif i not in field:
+                    if i not in dist:
+                        dist[i] = dist[point[0]] + 1
+                        newpoints.append([i,point[1]])
         if Debug: print("Found points:", found)
         if Debug: print("New points:", newpoints)
         if found:
-            newloc = tuple(sorted(found, key=lambda elem: elem[0])[0])
+            del meat[loc]
+            newloc = tuple(sorted(found, key=lambda elem: (elem[0][1], elem[0][0], elem[1][1], elem[1][0]))[0])
             if Debug: print ("Moving to", newloc[1])
             if Debug: print()
-            field.pop(meat[idnum][LOC])
-            field[newloc[1]] = idnum
-            meat[idnum][LOC] = newloc[1]
+            meat[newloc[1]] = {TYPE: meattype, HP: meathp, ID: meatid}
+            return(newloc[1])
         points = newpoints
-    return(idnum)
-
-def attack(idnum):
+    return loc
+                
+def attack(loc):
+    meattype = meat[loc][TYPE]
     minhp = 9**9
-    target = None
-    loc = meat[idnum][LOC]
-    for pt in (above(loc), toleft(loc), toright(loc), below(loc)):
-        tid = field.get(pt, ".")
-        if type(tid) == int:
-            if meat[tid][TYPE] != meat[idnum][TYPE]:
-                if minhp > meat[tid][HP]:
-                    minhp = meat[tid][HP]
-                    target = tid
-    if target:
-        meat[target][HP] -= attackpower[meat[idnum][TYPE]]
+    target = (-1,-1)
+    for i in [below(loc), toright(loc), toleft(loc), above(loc)]:
+        if i in meat and meattype != meat[i][TYPE]:
+            if meat[i][HP] <= minhp:
+                target = i
+                minhp = meat[i][HP]
+    if target != (-1,-1):
+        meat[target][HP] -= attackpower[meattype]
         if meat[target][HP] <= 0:
-            field.pop(meat[target][LOC])
-            meat.pop(target)
-    return idnum
+            del meat[target]
+
+def totalhp():
+    total = 0
+    for m in meat:
+        total += meat[m][HP]
+    return total
 
 def differentenemies():
-    t = None
+    t = 0
     for m in meat:
-        if not t:
+        if t == 0:
             t = meat[m][TYPE]
-        elif t != meat[m][TYPE]:
-            return True
+        else:
+            if t != meat[m][TYPE]:
+                return True
     return False
 
+def printworld(r):
+    print( "After %i rounds:" % r )
+    for y in range(maxy):
+        endstring = " "
+        for x in range(maxx):
+            if (x,y) in field:
+                print("#", end = "")
+            elif (x,y) in meat:
+                print(meat[(x,y)][TYPE], end = "")
+                endstring += "%s[%i]{%i,%i}(%i) " % (meat[(x,y)][TYPE], meat[(x,y)][ID], x, y, meat[(x,y)][HP])
+            else:
+                print(".", end = "")
+        print( endstring )
 
-r = 0
 printworld(r)
-while(differentenemies() ):
-    for idnum in sorted(meat.keys(), key=lambda elem: meat[elem][LOC]):
-        if idnum in meat.keys():
-            if not differentenemies():
-                r -= 1
-                break
-            move(idnum)
-            attack(idnum)
+while( differentenemies() ):
+    for m in sorted(meat), key=lambda elem: (elem[LOC][1], elem[LOC][0])):
+        if not differentenemies():
+            print("Combat ended before round %i ended" % r)
+            r -= 1
+            break
+        newm = move(m)
+        attack(newm)
+        if Debug: printworld(r)
     r += 1
     printworld(r)
-    input()
+    if Debug: input()
 
+if Debug: printworld(r)
+print("%i * %i = %i" % (r, totalhp(), r*totalhp()))

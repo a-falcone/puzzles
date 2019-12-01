@@ -146,3 +146,65 @@ So, in the example above, counting both water at rest (~) and other sand tiles t
 
 How many tiles can the water reach within the range of y values in your scan?
 """
+
+DATA = open("17.data","r")
+DATA = ["x=495, y=2..7", "y=7, x=495..501", "x=501, y=3..7", "x=498, y=2..4", "x=506, y=1..2", "x=498, y=10..13", "x=504, y=10..13", "y=13, x=498..504"]
+
+import re
+
+xyre = re.compile("^x=(\d+), y=(\d+)\.\.(\d+)$")
+yxre = re.compile("^y=(\d+), x=(\d+)\.\.(\d+)$")
+
+space = {}
+
+maxy = -1
+
+def showspace():
+    for y in range(14):
+        for x in range(494,508):
+            print(space.get((x,y), "."), end="")
+        print()
+    print()
+
+def drip(p):
+    (cx,cy) = p
+    showspace()
+    if p in space and space[p] != "+":
+        return
+    if cy + 1 == maxy:
+        return
+    if (cx,cy+1) not in space:
+        space[(cx,cy)] = "|"
+        drip((cx,cy+1))
+    elif space.get((cx,cy+1), ".") == "#":
+        drip((cx+1,cy))
+        drip((cx-1,cy))
+
+for line in DATA:
+    mxy = xyre.match(line.strip())
+    myx = yxre.match(line.strip())
+    if mxy:
+        (x, starty, endy) = list(map(int, mxy.groups()))
+        if endy > maxy:
+            maxy = endy
+        for y in range(starty, endy + 1):
+            space[(x,y)] = "#"
+    elif myx:
+        (y, startx, endx) = list(map(int, myx.groups()))
+        if y > maxy:
+            maxy = y
+        for x in range(startx, endx + 1):
+            space[(x,y)] = "#"
+    else:
+        quit(line)
+
+startingpoint = (500,0)
+space[startingpoint] = "+"
+drip((500,1))
+
+answer = 0
+for p in space:
+    if space[p] != "#":
+        answer += 1
+
+print(answer)
