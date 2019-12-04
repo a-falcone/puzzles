@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/usr/bin/env python3
 
 """
 --- Day 18: Settlers of The North Pole ---
@@ -154,3 +154,62 @@ After 10 minutes, there are 37 wooded acres and 31 lumberyards. Multiplying the 
 
 What will the total resource value of the lumber collection area be after 10 minutes?
 """
+
+import copy
+
+def calc_value(data):
+  if len(data[-1]) == 0:
+    data = data[:-1]
+  d = copy.deepcopy(data)
+  for i in range(10):
+    n = copy.deepcopy(d)
+    for y in range(len(d)):
+      for x in range(len(d[y])):
+        n[y][x] = nextstep(d, x, y)
+    d = n
+
+  t, l = 0, 0
+  for line in d:
+    for char in line:
+      if char == "|":
+        t += 1
+      elif char == "#":
+        l += 1
+  return l * t
+
+def nextstep(d, x, y):
+  t,l = 0,0
+  for xoff in -1, 0, 1:
+    for yoff in -1,0,1:
+      if xoff == 0 and yoff == 0:
+        continue
+      if (0 <= y + yoff < len(d)) and (0 <= x + xoff < len(d[y])):
+        if d[y + yoff][x + xoff] == "|":
+          t += 1
+        elif d[y + yoff][x + xoff] == "#":
+          l += 1
+        elif d[y + yoff][x + xoff] == ".":
+          pass
+        else:
+          print("what is this? {}".format(d[y + yoff][x + xoff]))
+  if d[y][x] == ".":
+    if t >= 3:
+      return "|"
+    else:
+      return "."
+  elif d[y][x] == "|":
+    if l >= 3:
+      return "#"
+    else:
+      return "|"
+  elif d[y][x] == "#":
+    if l >= 1 and t >= 1:
+      return "#"
+    else:
+      return "."
+  else:
+    print( "don't know what this is: {}".format(d[y][x]) )
+    return "X"
+
+with open("18.data", "r") as f:
+  print(calc_value([list(line) for line in f.read().split("\n")]))
