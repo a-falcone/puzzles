@@ -114,18 +114,18 @@ with open("07.data", "r") as f:
 
 maxi = 0
 maxperm = []
-for i in itertools.permutations(range(5)):
+for perm in itertools.permutations(range(5)):
   d = data.copy()
-  val = process(d,[0,i[0]])
+  val = process(d,[0,perm[0]])
   d = data.copy()
-  val = process(d,[val,i[1]])
+  val = process(d,[val,perm[1]])
   d = data.copy()
-  val = process(d,[val,i[2]])
+  val = process(d,[val,perm[2]])
   d = data.copy()
-  val = process(d,[val,i[3]])
+  val = process(d,[val,perm[3]])
   d = data.copy()
-  val = process(d,[val,i[4]])
+  val = process(d,[val,perm[4]])
   if val > maxi:
       maxi = val
-      maxperm = i
+      maxperm = perm
 print(maxi,maxperm)

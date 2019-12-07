@@ -170,17 +170,17 @@ with open("07.data", "r") as f:
 
 maxi = 0
 maxperm = []
-for i in itertools.permutations(range(5,10)):
+for perm in itertools.permutations(range(5,10)):
     ampa = Amp("A",data.copy())
     ampb = Amp("B",data.copy())
     ampc = Amp("C",data.copy())
     ampd = Amp("D",data.copy())
     ampe = Amp("E",data.copy())
-    aout = ampa.run([i[0],0])
-    bout = ampb.run([i[1],aout])
-    cout = ampc.run([i[2],bout])
-    dout = ampd.run([i[3],cout])
-    eout = ampe.run([i[4],dout])
+    aout = ampa.run([perm[0],0])
+    bout = ampb.run([perm[1],aout])
+    cout = ampc.run([perm[2],bout])
+    dout = ampd.run([perm[3],cout])
+    eout = ampe.run([perm[4],dout])
     while not ampe.stopped():
         aout = ampa.run([eout])
         bout = ampb.run([aout])
@@ -189,6 +189,6 @@ for i in itertools.permutations(range(5,10)):
         eout = ampe.run([dout])
     if eout > maxi:
         maxi = eout
-        maxperm = i
+        maxperm = perm
     
 print(maxi,maxperm)
