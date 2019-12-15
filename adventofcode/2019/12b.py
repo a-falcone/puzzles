@@ -227,33 +227,63 @@ class Moon:
         self.name = name
         self.pos = [xp, yp, zp]
         self.vel = [0, 0, 0]
+        self.step = 0
+        self.hist = [{(xp,0):0},{(yp,0):0},{(zp,0):0}]
+        cyclelen = [0,0,0]
+        firstrep = [0,0,0]
 
     def energy( self ):
         ap, av = 0, 0
-        for i in range(3):
-            ap += abs(self.pos[i])
-            av += abs(self.vel[i])
+        for coord in range(3):
+            ap += abs(self.pos[coord])
+            av += abs(self.vel[coord])
         return ap * av
 
     def gravity( self, moons ):
         for o in moons:
             if self.name == o.name:
                 continue
-            for i in range(3):
-                if self.pos[i] > o.pos[i]:
-                    self.vel[i] -= 1
-                elif self.pos[i] < o.pos[i]:
-                    self.vel[i] += 1
+            for coord in range(3):
+                if self.pos[coord] > o.pos[coord]:
+                    self.vel[coord] -= 1
+                elif self.pos[coord] < o.pos[coord]:
+                    self.vel[coord] += 1
 
     def move( self ):
         for i in range(3):
             self.pos[i] += self.vel[i]
-    
+        self.step += 1
+
     def __repr__(self):
         return "name: {}, pos=<x = {:>3}, y = {:>3}, z = {:>3}>, vel=<x = {:>3}, y = {:>3}, z = {:>3}>".format(self.name, *self.pos, *self.vel)
 
+def finddupe( moons ):
+    while True:
+        for m in moons:
+            m.gravity( moons )
+        for m in moons:
+            m.move()
+            for coord in range(3):
+                if not m.cyclelen[coord]:
+                    if (m.pos[coord],m.vel[coord]) in self.hist[coord]:
+                        m.cyclelen[coord] = m.step - self.hist[coord][(m.pos[coord],m.vel[coord])]
+                        m.firstrep[coord] = self.hist[coord][(m.pos[coord],m.vel[coord])]
+                    else:
+                        self.hist[coord][(m.pos[coord],m.vel[coord])] = m.step
+            
+
 with open("12.data", "r") as f:
     data = f.read().strip()
+
+data = """<x=-8, y=-10, z=0>
+<x=5, y=5, z=10>
+<x=2, y=-7, z=3>
+<x=9, y=-8, z=-3>"""
+
+data = """<x=-1, y=0, z=2>
+<x=2, y=-10, z=-7>
+<x=4, y=-8, z=8>
+<x=3, y=5, z=-1>"""
 
 moons = []
 for i in range(4):
@@ -261,15 +291,4 @@ for i in range(4):
     xp, yp, zp = map(int, list(re.findall( "-?\d+", line )))
     moons.append(Moon("m{}".format(i), xp, yp, zp))
 
-for i in range(1000):
-    for m in moons:
-        m.gravity( moons )
-    for m in moons:
-        m.move()
-
-tote = 0
-for m in moons:
-    print( m )
-    tote += m.energy()
-
-print(tote)
+print(finddupe(moons))
