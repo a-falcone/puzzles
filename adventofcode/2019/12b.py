@@ -222,73 +222,67 @@ How many steps does it take to reach the first state that exactly matches a prev
 
 import re
 
-class Moon:
-    def __init__( self, name, xp, yp, zp ):
-        self.name = name
-        self.pos = [xp, yp, zp]
-        self.vel = [0, 0, 0]
-        self.step = 0
-        self.hist = [{(xp,0):0},{(yp,0):0},{(zp,0):0}]
-        cyclelen = [0,0,0]
-        firstrep = [0,0,0]
+class Moons:
+    def __init__( self, coord, pos ):
+        self.coord = coord
+        self.pos = pos
+        self.vel = [0,0,0,0]
+        self.i = 0
+        self.hist = {(*self.pos, *self.vel): 0}
+        self.cyclelen = 0
+        self.firstrep = 0
 
-    def energy( self ):
-        ap, av = 0, 0
-        for coord in range(3):
-            ap += abs(self.pos[coord])
-            av += abs(self.vel[coord])
-        return ap * av
-
-    def gravity( self, moons ):
-        for o in moons:
-            if self.name == o.name:
-                continue
-            for coord in range(3):
-                if self.pos[coord] > o.pos[coord]:
-                    self.vel[coord] -= 1
-                elif self.pos[coord] < o.pos[coord]:
-                    self.vel[coord] += 1
-
-    def move( self ):
-        for i in range(3):
+    def step(self):
+        if self.cyclelen:
+            return True
+        for i in range(4):
+            for j in range(i+1,4):
+                if self.pos[i] > self.pos[j]:
+                    self.vel[i] -= 1
+                    self.vel[j] += 1
+                elif self.pos[j] > self.pos[i]:
+                    self.vel[j] -= 1
+                    self.vel[i] += 1
+        for i in range(4):
             self.pos[i] += self.vel[i]
-        self.step += 1
+        state = (*self.pos, *self.vel)
+        self.i += 1
+        if state in self.hist:
+            self.firstrep = self.hist[state]
+            self.cyclelen = self.i - self.firstrep
+            return True
+        else:
+            self.hist[state] = self.i
+        return False
+
 
     def __repr__(self):
-        return "name: {}, pos=<x = {:>3}, y = {:>3}, z = {:>3}>, vel=<x = {:>3}, y = {:>3}, z = {:>3}>".format(self.name, *self.pos, *self.vel)
-
-def finddupe( moons ):
-    while True:
-        for m in moons:
-            m.gravity( moons )
-        for m in moons:
-            m.move()
-            for coord in range(3):
-                if not m.cyclelen[coord]:
-                    if (m.pos[coord],m.vel[coord]) in self.hist[coord]:
-                        m.cyclelen[coord] = m.step - self.hist[coord][(m.pos[coord],m.vel[coord])]
-                        m.firstrep[coord] = self.hist[coord][(m.pos[coord],m.vel[coord])]
-                    else:
-                        self.hist[coord][(m.pos[coord],m.vel[coord])] = m.step
-            
+        return "coord: {}, pos={}, vel={}, cycle={}, firstrep={}".format(self.coord, self.pos, self.vel, self.cyclelen, self.firstrep)
 
 with open("12.data", "r") as f:
     data = f.read().strip()
 
-data = """<x=-8, y=-10, z=0>
-<x=5, y=5, z=10>
-<x=2, y=-7, z=3>
-<x=9, y=-8, z=-3>"""
+#data = """<x=-8, y=-10, z=0>
+#<x=5, y=5, z=10>
+#<x=2, y=-7, z=3>
+#<x=9, y=-8, z=-3>"""
+#
+#data = """<x=-1, y=0, z=2>
+#<x=2, y=-10, z=-7>
+#<x=4, y=-8, z=8>
+#<x=3, y=5, z=-1>"""
 
-data = """<x=-1, y=0, z=2>
-<x=2, y=-10, z=-7>
-<x=4, y=-8, z=8>
-<x=3, y=5, z=-1>"""
+xpos,ypos,zpos = [],[],[]
+for line in data.split("\n"):
+    x,y,z = re.findall(r'-?\d+', line)
+    xpos.append(int(x))
+    ypos.append(int(y))
+    zpos.append(int(z))
+coords = [Moons('x', xpos), Moons('y', ypos), Moons('z', zpos)]
 
-moons = []
-for i in range(4):
-    line = data.split("\n")[i]
-    xp, yp, zp = map(int, list(re.findall( "-?\d+", line )))
-    moons.append(Moon("m{}".format(i), xp, yp, zp))
+for m in coords:
+    while not m.step():
+        pass
 
-print(finddupe(moons))
+for c in coords:
+    print(c)
