@@ -31,17 +31,25 @@ Beat the game by breaking all the blocks. What is your score after the last bloc
 """
 
 from collections import deque
+from os import system
+import time
 
 class Intcode:
-    def __init__(self,name,data,game):
+    def __init__(self,name,data):
         self.name = name
         self.d = {i:data[i] for i in range(len(data))}
         self.halted = False
         self.i = 0
         self.lastout = 0
-        self.inputvals = deque([])
         self.relbase = 0
-        self.game = game
+
+    def copy(self):
+        c = Intcode(self.name+"_copy", self.d.copy())
+        c.halted = self.halted
+        c.i = self.i
+        c.lastout = self.lastout
+        c.relbase = self.relbase
+        return c
 
     def stopped(self):
         return self.halted
@@ -63,7 +71,7 @@ class Intcode:
             modes //= 10
         return ls
 
-    def run(self):
+    def run(self, command):
         if self.halted:
             print( "{} is halted. Can not run.".format(self.name) )
             return False
@@ -80,14 +88,15 @@ class Intcode:
                 self.i += 4
             elif opcode == 3:
                 """Opcode 3 takes a single integer as input and saves it to the position given by its only parameter. For example, the instruction 3,50 would take an input value and store it at address 50."""
-                print(self.game)
-                self.d[loc[0]] = int(input())
+                if command == None:
+                    return None
+                self.d[loc[0]] = command
                 self.i += 2
             elif opcode == 4:
                 """Opcode 4 outputs the value of its only parameter. For example, the instruction 4,50 would output the value at address 50."""
                 self.lastout = self.d.get(loc[0],0)
                 self.i += 2
-                game.command(self.lastout)
+                return(self.lastout)
             elif opcode == 5:
                 """Opcode 5 is jump-if-true: if the first parameter is non-zero, it sets the instruction pointer to the value from the second parameter. Otherwise, it does nothing."""
                 if self.d.get(loc[0],0):
@@ -123,7 +132,29 @@ class Game:
         self.grid = {}
         self.maxx = 0
         self.maxy = 0
+        self.ballloc = (0,0)
+        self.paddleloc = (0,0)
         self.c = []
+
+    def copy(self):
+        g = Game()
+        g.grid = self.grid.copy()
+        g.maxx = self.maxx
+        g.maxy = self.maxy
+        g.ballloc = tuple(self.ballloc)
+        g.paddleloc = tuple(self.paddleloc)
+        g.c = self.c.copy()
+        return g
+
+    def bricks(self):
+        count = 0
+        for i in self.grid:
+            if self.grid[i] == 2:
+                count += 1
+        return count
+
+    def score(self):
+        return self.grid.get((-1,0), 0)
 
     def __repr__(self):
         output = "Score: {}\n\n".format(self.grid.get((-1,0), "Unknown"))
@@ -141,11 +172,16 @@ class Game:
                 elif c == 4:
                     output += "o"
             output += "\n"
+        print("Ball: {}, paddle: {}".format(self.ballloc, self.paddleloc))
         return output
 
     def command(self, c):
         self.c.append(c)
         if len(self.c) == 3:
+            if c == 3:
+                self.paddleloc = (self.c[0], self.c[1])
+            elif c == 4:
+                self.ballloc = (self.c[0], self.c[1])
             self.maxx = max(self.maxx, self.c[0])
             self.maxy = max(self.maxy, self.c[1])
             self.grid[(self.c[0], self.c[1])] = self.c[2]
@@ -156,11 +192,36 @@ with open("13.data", "r") as f:
 data[0] = 2
 
 game = Game()
-computer = Intcode("game",data,game)
-computer.run()
+computer = Intcode("game",data)
+nextcommand = None
+uninitialized = True
+while uninitialized or game.bricks() > 0:
+    out = computer.run(nextcommand)
+    nextcommand = None
+    if out == None:
+        uninitialized = False
+#        system('clear')
+#        print("Remaining bricks: {}".format(game.bricks()))
+#        print(game)
+        if game.paddleloc[0] == game.ballloc[0] and game.paddleloc[1] == game.ballloc[1] + 1:
+            nextcommand = 0
+        else:
+            og = game.copy()
+            oc = computer.copy()
+            on = 0
+            oout = oc.run(on)
+            while not oc.halted and not oout == None:
+                og.command(oout)
+                oout = oc.run(None)
+            if og.paddleloc[0] > og.ballloc[0]:
+                nextcommand = -1
+            elif og.paddleloc[0] == og.ballloc[0]:
+                nextcommand = 0
+            elif og.paddleloc[0] < og.ballloc[0]:
+                nextcommand = 1
+    else:
+        game.command(int(out))
 
-count = 0
-for s in game.grid:
-    if game.grid[s] == 2:
-        count += 1
-print( count )
+computer.run(None)
+computer.run(None)
+print(computer.run(None))
