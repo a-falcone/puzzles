@@ -68,6 +68,50 @@ Then, perhaps west (3) gets a reply of 0, south (2) gets a reply of 1, south aga
 Now, because of the reply of 2, you know you've found the oxygen system! In this example, it was only 2 moves away from the repair droid's starting position.
 
 What is the fewest number of movement commands required to move the repair droid from its starting position to the location of the oxygen system?
+
+--- Part Two ---
+You quickly repair the oxygen system; oxygen gradually fills the area.
+
+Oxygen starts in the location containing the repaired oxygen system. It takes one minute for oxygen to spread to all open locations that are adjacent to a location that already contains oxygen. Diagonal locations are not adjacent.
+
+In the example above, suppose you've used the droid to explore the area fully and have the following map (where locations that currently contain oxygen are marked O):
+
+ ##
+#..##
+#.#..#
+#.O.#
+ ###
+Initially, the only location which contains oxygen is the location of the repaired oxygen system. However, after one minute, the oxygen spreads to all open (.) locations that are adjacent to a location containing oxygen:
+
+ ##
+#..##
+#.#..#
+#OOO#
+ ###
+After a total of two minutes, the map looks like this:
+
+ ##
+#..##
+#O#O.#
+#OOO#
+ ###
+After a total of three minutes:
+
+ ##
+#O.##
+#O#OO#
+#OOO#
+ ###
+And finally, the whole region is full of oxygen after a total of four minutes:
+
+ ##
+#OO##
+#O#OO#
+#OOO#
+ ###
+So, in this example, all locations contain oxygen after 4 minutes.
+
+Use the repair droid to get a complete map of the area. How many minutes will it take to fill with oxygen?
 """
 
 from os import system
@@ -160,6 +204,8 @@ class Ship:
         self.pos = (0,0)
         self.field = {self.pos: 0}
         self.maxx, self.minx, self.maxy, self.miny = 0,0,0,0
+        self.found = False
+        self.maxdepth = 0
 
     def __repr__(self):
         out = ""
@@ -222,23 +268,41 @@ class Ship:
         return out
 
 OPP = [None, 2, 1, 4, 3]
-tankloc = 0
 
 def run(depth, ship, computer):
     if ship.field[ship.pos] == 2:
-        print("Tank at {}".format(depth))
-    for direction in [1,2,3,4]:
+        ship.found = True
+        return None
+    for direction in [4,3,1,2]:
+        if ship.found:
+            return None
         newpos = ship.newpos(direction)
         if newpos not in ship.field:
             out = ship.move(direction,computer)
             if out != 0:
                 run(depth + 1, ship, computer)
+                if ship.found:
+                    return None
+                ship.move(OPP[direction],computer)
+
+def runagain(depth, ship, computer):
+    ship.maxdepth = max(depth, ship.maxdepth)
+    for direction in [4,3,1,2]:
+        newpos = ship.newpos(direction)
+        if newpos not in ship.field:
+            out = ship.move(direction,computer)
+            if out != 0:
+                runagain(depth + 1, ship, computer)
                 ship.move(OPP[direction],computer)
 
 with open("15.data", "r") as f:
     data = list(map(int, f.read().strip().split(",")))
 
 computer = Intcode("c",data)
-ship = Ship()
 
+ship = Ship()
 run(0, ship, computer)
+
+ship = Ship()
+runagain(0,ship,computer)
+print(ship.maxdepth)
