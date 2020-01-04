@@ -85,22 +85,13 @@ Here is the eight-digit message in the final output list after 100 phases. The m
 After repeating your input signal 10000 times and running 100 phases of FFT, what is the eight-digit message embedded in the final output list?
 """
 
-def phase( pattern, signal ):
-    output = []
-    for i in range(len(signal)):
-        sum = 0
-        for j in range(len(signal)):
-            sum += signal[j] * pattern[((j + 1) // (i + 1)) % len(pattern)]
-        output.append(abs(sum) % 10)
-    return output
-
 with open("16.data", "r") as f:
     data = list(map(int, f.readline().strip()))
 
-data = list(map(int, "0000000")
+header = int("".join(map(str, data[:7])))
+data = (data * 10000)[header:]
 
-pattern = [0, 1, 0, -1]
 for i in range(100):
-    data = phase( pattern, data )
-
-print("".join(map( str, data[:8])))
+    for j in range(len(data)-2,-1,-1):
+        data[j] = (data[j] + data[j+1]) % 10
+print(int("".join(map(str,data[:8]))))
