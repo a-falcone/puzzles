@@ -167,12 +167,12 @@ def tractor(field, data, x, y):
         field[(x,y)] = c.run(y)
     return field[(x,y)]
 
-def findship(data):
+def findship(data,start,step):
     field = {}
-    y = 950
+    y = start
     minx = 0
     while y < 10000:
-        y += 1
+        y += step
         x = minx
         out = tractor(field, data, x, y)
         #Under the beam. Move right until found beam
@@ -184,7 +184,7 @@ def findship(data):
             out = tractor(field, data, x, y)
             if out == 1:
                 if tractor(field, data, x + 99, y) == 1 and tractor(field, data, x, y + 99) == 1:
-                    return x*10000 + y
+                    return (x, y)
             else:
                 break
             x += 1
@@ -192,4 +192,6 @@ def findship(data):
 with open("19.data", "r") as f:
     data = list(map(int, f.read().strip().split(",")))
 
-print( findship(data) )
+found = findship(data,1,100)
+found = findship(data,found[1] - 100,1)
+print (found[0] * 10000 + found[1])
