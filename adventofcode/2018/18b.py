@@ -155,6 +155,7 @@ After 10 minutes, there are 37 wooded acres and 31 lumberyards. Multiplying the 
 What will the total resource value of the lumber collection area be after 10 minutes?
 
 --- Part Two ---
+
 This important natural resource will need to last for at least thousands of years. Are the Elves collecting this lumber sustainably?
 
 What will the total resource value of the lumber collection area be after 1000000000 minutes?
@@ -162,17 +163,35 @@ What will the total resource value of the lumber collection area be after 100000
 
 import copy
 
+def tu(d):
+  return tuple([tuple(a) for a in d])
+
 def calc_value(data):
   if len(data[-1]) == 0:
     data = data[:-1]
   d = copy.deepcopy(data)
-  for i in range(1000000000):
+  cyclelen, rep = 0,0
+  seen = {tu(d):rep}
+  while True:
+    rep += 1
     n = copy.deepcopy(d)
     for y in range(len(d)):
       for x in range(len(d[y])):
         n[y][x] = nextstep(d, x, y)
     d = n
+    t = tu(d)
+    if t in seen:
+      cyclelen = rep - seen[t]
+      rep = seen[t]
+      break
+    else:
+      seen[t] = rep
+  target = (1000000000 - rep) % cyclelen + rep
+  for d,v in seen.items():
+    if v == target:
+      return _calc(d)
 
+def _calc(d):
   t, l = 0, 0
   for line in d:
     for char in line:
@@ -215,18 +234,6 @@ def nextstep(d, x, y):
   else:
     print( "don't know what this is: {}".format(d[y][x]) )
     return "X"
-
-#print(calc_value([list(line) for line in """.#.#...|#.
-#.....#|##|
-#.|..|...#.
-#..|#.....#
-##.#|||#|#|
-#...#.||...
-#.|....|...
-#||...#|.#|
-#|.||||..|.
-#...#.|..|.
-#""".split("\n")]))
 
 with open("18.data", "r") as f:
   print(calc_value([list(line) for line in f.read().split("\n")]))
