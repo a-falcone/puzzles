@@ -76,23 +76,14 @@ with open("03.data", "r") as f:
         data.append(line)
 
 product = 1
-for slope in [1,3,5,7]:
+for (dx,dy) in [(1,1),(3,1),(5,1),(7,1),(1,2)]:
     trees = 0
-    position = 0
-    for line in data:
-        if line[position % len(line)] == "#":
+    x, y = 0, 0
+    while y < len(data):
+        if data[y][x % len(data[y])] == "#":
             trees += 1
-        position += slope
+        x += dx
+        y += dy
     product *= trees
-
-trees = 0
-position = 0
-y = 0
-while y < len(data):
-    if data[y][position % len(line)] == "#":
-        trees += 1
-    position += 1
-    y += 2
-product *= trees
 
 print(product)
