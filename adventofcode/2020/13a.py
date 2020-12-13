@@ -67,4 +67,3 @@ for bus in data[1].split(","):
         answer = time * bus
 
 print( answer )
-        
