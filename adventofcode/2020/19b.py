@@ -134,7 +134,7 @@ After updating rules 8 and 11, how many messages completely match rule 0?
 import re
 
 def times( lists ):
-    prod = lists.pop(0)
+    prod = next(lists)
     for s in lists:
         p1 = set()
         for p in prod:
@@ -143,21 +143,28 @@ def times( lists ):
         prod = p1
     return prod
 
-def fillword( r, depth ):
-    if depth <= 0:
-        return ""
-    if r in words:
-        return words[r]
-    w = set()
-    for rule in rules[r]:
-        l = []
-        for subrule in rule.split(" "):
-            if subrule == r:
-                depth -= 1
-            l.append( fillword( subrule, depth ) )
-        w.update( list( times( l ) ) )
-    words[r] = w
+def fillword( r ):
+    if r not in words:
+        words[r] = set()
+        for rule in rules[r]:
+            words[r].update( list( times( map( fillword, rule.split(" ") ) ) ) )
     return words[r]
+
+def testword( w, words, l ):
+    if len(w) % l != 0:
+        return False
+    pos = 0
+    count42 = 0
+    count31 = 0
+    while pos < len(w) and w[pos:pos + l] in words["42"]:
+        count42 += 1
+        pos += l
+    while pos < len(w) and  w[pos:pos + l] in words["31"]:
+        count31 += 1
+        pos += l
+    if pos == len(w) and count42 > count31 > 0:
+        return True
+    return False
 
 data = []
 
@@ -165,7 +172,7 @@ with open("19.data", "r") as f:
     for line in f:
         data.append(line.strip())
 
-data = [ '42: 9 14 | 10 1', '9: 14 27 | 1 26', '10: 23 14 | 28 1', '1: "a"', '11: 42 31', '5: 1 14 | 15 1', '19: 14 1 | 14 14', '12: 24 14 | 19 1', '16: 15 1 | 14 14', '31: 14 17 | 1 13', '6: 14 14 | 1 14', '2: 1 24 | 14 4', '0: 8 11', '13: 14 3 | 1 12', '15: 1 | 14', '17: 14 2 | 1 7', '23: 25 1 | 22 14', '28: 16 1', '4: 1 1', '20: 14 14 | 1 15', '3: 5 14 | 16 1', '27: 1 6 | 14 18', '14: "b"', '21: 14 1 | 1 14', '25: 1 1 | 1 14', '22: 14 14', '8: 42', '26: 14 22 | 1 20', '18: 15 15', '7: 14 5 | 1 21', '24: 14 1', '', 'abbbbbabbbaaaababbaabbbbabababbbabbbbbbabaaaa', 'bbabbbbaabaabba', 'babbbbaabbbbbabbbbbbaabaaabaaa', 'aaabbbbbbaaaabaababaabababbabaaabbababababaaa', 'bbbbbbbaaaabbbbaaabbabaaa', 'bbbababbbbaaaaaaaabbababaaababaabab', 'ababaaaaaabaaab', 'ababaaaaabbbaba', 'baabbaaaabbaaaababbaababb', 'abbbbabbbbaaaababbbbbbaaaababb', 'aaaaabbaabaaaaababaa', 'aaaabbaaaabbaaa', 'aaaabbaabbaaaaaaabbbabbbaaabbaabaaa', 'babaaabbbaaabaababbaabababaaab', 'aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba' ]
+#data = [ '42: 9 14 | 10 1', '9: 14 27 | 1 26', '10: 23 14 | 28 1', '1: "a"', '11: 42 31', '5: 1 14 | 15 1', '19: 14 1 | 14 14', '12: 24 14 | 19 1', '16: 15 1 | 14 14', '31: 14 17 | 1 13', '6: 14 14 | 1 14', '2: 1 24 | 14 4', '0: 8 11', '13: 14 3 | 1 12', '15: 1 | 14', '17: 14 2 | 1 7', '23: 25 1 | 22 14', '28: 16 1', '4: 1 1', '20: 14 14 | 1 15', '3: 5 14 | 16 1', '27: 1 6 | 14 18', '14: "b"', '21: 14 1 | 1 14', '25: 1 1 | 1 14', '22: 14 14', '8: 42', '26: 14 22 | 1 20', '18: 15 15', '7: 14 5 | 1 21', '24: 14 1', '', 'abbbbbabbbaaaababbaabbbbabababbbabbbbbbabaaaa', 'bbabbbbaabaabba', 'babbbbaabbbbbabbbbbbaabaaabaaa', 'aaabbbbbbaaaabaababaabababbabaaabbababababaaa', 'bbbbbbbaaaabbbbaaabbabaaa', 'bbbababbbbaaaaaaaabbababaaababaabab', 'ababaaaaaabaaab', 'ababaaaaabbbaba', 'baabbaaaabbaaaababbaababb', 'abbbbabbbbaaaababbbbbbaaaababb', 'aaaaabbaabaaaaababaa', 'aaaabbaaaabbaaa', 'aaaabbaabbaaaaaaabbbabbbaaabbaabaaa', 'babaaabbbaaabaababbaabababaaab', 'aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba' ]
 
 totest = []
 rules = {}
@@ -183,16 +190,11 @@ for line in data:
         else:
             rules[rule] = stuff.split( " | " )
 
-rules["8"] = [ "42", "42 8" ]
-rules["11"] = [ "42 31", "42 11 31" ]
-
-fillword("0", 3)
-
-print( words[ "8" ] )
+fillword("42")
+fillword("31")
 
 total = 0
 for t in totest:
-    if t in words["0"]:
+    if testword(t, words, 8):
         total += 1
-
 print(total)
