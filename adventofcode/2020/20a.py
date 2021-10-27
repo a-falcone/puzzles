@@ -177,6 +177,9 @@ class Tile:
         s += "\n".join( self._data )
         return s
 
+    def name(self):
+        return self._name
+
     def add(self, line):
         self._data.append(line)
 
@@ -205,9 +208,52 @@ class Tile:
             d.append( line[::-1] )
         self._data = d
 
-def solve( size, partial, used, tiles):
-    print( size, partial, used, tiles )
-    return 0
+def solve(size, partial, tiles, edges):
+    if len(partial) == size * size:
+        return partial
+    if not partial:
+        #list is empty. try every tile in all 4 rotations
+        for t in tiles:
+            s = solve(size, [t], tiles, edges)
+            if s:
+                return s
+            for i in range(3):
+                tiles[t].rotate()
+                s = solve(size, [t], tiles, edges)
+                if s:
+                    return s
+
+    else:
+        #list is not empty. find out where next tile goes. assemble list of candidates for next tile
+        location = len(partial)
+        candidates = set()
+        if location >= size:
+            #not first row. check above
+            candidates.update(edges[tiles[partial[location - size]].bottom()])
+        if location % size != 0:
+            #not first column. check left
+            candidates.update(edges[tiles[partial[location - 1]].right()])
+        candidates.difference_update(partial)
+
+        for candidate in candidates:
+            for i in range(2):
+                tiles[candidate].flip()
+                for j in range(4):
+                    tiles[candidate].rotate()
+                    if location >= size:
+                        if tiles[candidate].top() != tiles[partial[location - size]].bottom():
+                            continue
+                    if location % size != 0:
+                        if tiles[candidate].left() != tiles[partial[location - 1]].right():
+                            continue
+
+                    partial.append(candidate)
+                    s = solve( size, partial, tiles, edges )
+                    if s:
+                        return s
+
+        partial.pop()
+    return []
 
 data = []
 
@@ -215,7 +261,7 @@ with open("20.data", "r") as f:
     for line in f:
         data.append(line.strip())
 
-data = [ 'Tile 2311:', '..##.#..#.', '##..#.....', '#...##..#.', '####.#...#', '##.##.###.', '##...#.###', '.#.#.#..##', '..#....#..', '###...#.#.', '..###..###', '', 'Tile 1951:', '#.##...##.', '#.####...#', '.....#..##', '#...######', '.##.#....#', '.###.#####', '###.##.##.', '.###....#.', '..#.#..#.#', '#...##.#..', '', 'Tile 1171:', '####...##.', '#..##.#..#', '##.#..#.#.', '.###.####.', '..###.####', '.##....##.', '.#...####.', '#.##.####.', '####..#...', '.....##...', '', 'Tile 1427:', '###.##.#..', '.#..#.##..', '.#.##.#..#', '#.#.#.##.#', '....#...##', '...##..##.', '...#.#####', '.#.####.#.', '..#..###.#', '..##.#..#.', '', 'Tile 1489:', '##.#.#....', '..##...#..', '.##..##...', '..#...#...', '#####...#.', '#..#.#.#.#', '...#.#.#..', '##.#...##.', '..##.##.##', '###.##.#..', '', 'Tile 2473:', '#....####.', '#..#.##...', '#.##..#...', '######.#.#', '.#...#.#.#', '.#########', '.###.#..#.', '########.#', '##...##.#.', '..###.#.#.', '', 'Tile 2971:', '..#.#....#', '#...###...', '#.#.###...', '##.##..#..', '.#####..##', '.#..####.#', '#..#.#..#.', '..####.###', '..#.#.###.', '...#.#.#.#', '', 'Tile 2729:', '...#.#.#.#', '####.#....', '..#.#.....', '....#..#.#', '.##..##.#.', '.#.####...', '####.#.#..', '##.####...', '##..#.##..', '#.##...##.', '', 'Tile 3079:', '#.#.#####.', '.#..######', '..#.......', '######....', '####.#..#.', '.#...#.##.', '#.#####.##', '..#.###...', '..#.......', '..#.###...' ]
+#data = [ 'Tile 2311:', '..##.#..#.', '##..#.....', '#...##..#.', '####.#...#', '##.##.###.', '##...#.###', '.#.#.#..##', '..#....#..', '###...#.#.', '..###..###', '', 'Tile 1951:', '#.##...##.', '#.####...#', '.....#..##', '#...######', '.##.#....#', '.###.#####', '###.##.##.', '.###....#.', '..#.#..#.#', '#...##.#..', '', 'Tile 1171:', '####...##.', '#..##.#..#', '##.#..#.#.', '.###.####.', '..###.####', '.##....##.', '.#...####.', '#.##.####.', '####..#...', '.....##...', '', 'Tile 1427:', '###.##.#..', '.#..#.##..', '.#.##.#..#', '#.#.#.##.#', '....#...##', '...##..##.', '...#.#####', '.#.####.#.', '..#..###.#', '..##.#..#.', '', 'Tile 1489:', '##.#.#....', '..##...#..', '.##..##...', '..#...#...', '#####...#.', '#..#.#.#.#', '...#.#.#..', '##.#...##.', '..##.##.##', '###.##.#..', '', 'Tile 2473:', '#....####.', '#..#.##...', '#.##..#...', '######.#.#', '.#...#.#.#', '.#########', '.###.#..#.', '########.#', '##...##.#.', '..###.#.#.', '', 'Tile 2971:', '..#.#....#', '#...###...', '#.#.###...', '##.##..#..', '.#####..##', '.#..####.#', '#..#.#..#.', '..####.###', '..#.#.###.', '...#.#.#.#', '', 'Tile 2729:', '...#.#.#.#', '####.#....', '..#.#.....', '....#..#.#', '.##..##.#.', '.#.####...', '####.#.#..', '##.####...', '##..#.##..', '#.##...##.', '', 'Tile 3079:', '#.#.#####.', '.#..######', '..#.......', '######....', '####.#..#.', '.#...#.##.', '#.#####.##', '..#.###...', '..#.......', '..#.###...' ]
 
 tilename = ""
 tiles = {}
@@ -242,5 +288,6 @@ for tilename in tiles:
 
 size = int(math.sqrt(len(tiles)))
 
-solution = solve(size, [], set(), tiles )
-print(solution)
+solution = solve(size, [], tiles, edges)
+
+print(solution[0] * solution[size - 1] * solution[-1] * solution[size * (size - 1)])
