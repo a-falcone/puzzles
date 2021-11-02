@@ -34,5 +34,25 @@ What is the value after 2017 in your completed circular buffer?
 Your puzzle input is 367.
 """
 
-step=3
+class Node:
+    def __init__( self, value ):
+        self.value = value
+        self.next = None
+
+
 step=367
+#step=3
+
+zero = Node(0)
+zero.next = zero
+head = zero
+
+for i in range( 2017 ):
+    for _ in range(step):
+        head = head.next
+    n = Node(i+1)
+    n.next = head.next
+    head.next = n
+    head = n
+
+print( head.next.value )
