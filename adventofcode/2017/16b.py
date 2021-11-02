@@ -36,36 +36,41 @@ In what order are the programs standing after their billion dances?
 
 """
 
-import re
+def spin( l, d ):
+    return l[len(l)-d:] + l[:len(l)-d]
 
-def find( dancers, dancer1, dancer2 ):
-    for i in range(len(dancers)):
-        if dancers[i] == dancer1:
-            pos1 = i
-        if dancers[i] == dancer2:
-            pos2 = i
-    return pos1, pos2
+def exchange( l, a, b ):
+    a, b = int(a), int(b)
+    c, d = min(a,b), max(a,b)
+    return l[:c] + [l[d]] + l[c+1:d] + [l[c]] + l[d+1:]
 
+def partner( l, a, b ):
+    la, lb = l.index(a), l.index(b)
+    c, d = min(la,lb), max(la,lb)
+    return l[:c] + [l[d]] + l[c+1:d] + [l[c]] + l[d+1:]
 
-data = ["s1,x3/4,pe/b"]
-group = list( "abcde" )
-data = open( "data/16.data", "r" )
-group = list( "abcdefghijklmnop" )
+data = []
+with open( "data/16.data", "r" ) as f:
+    line = f.read().strip()
+    data = line.split(",")
 
-for _ in range( 10**9 ):
-    for line in data:
-        for move in line.split(","):
-            if move[0] == "s":
-                spin = int(re.findall("\d+", move)[0])
-                tail = group[-1 * spin:]
-                del(group[-1 * spin:])
-                group[0:0] = tail
-            elif move[0] == "x":
-                pos1, pos2 = re.findall("\d+", move)
-                group[int(pos1)], group[int(pos2)] = group[int(pos2)], group[int(pos1)]
-            elif move[0] == "p":
-                dancer1, dancer2 = move[1], move[3]
-                pos1, pos2 = find(group, dancer1, dancer2)
-                group[int(pos1)], group[int(pos2)] = group[int(pos2)], group[int(pos1)]
+s = list("abcdefghijklmnop")
 
-print( "".join(group) )
+#data = ["s1", "x3/4", "pe/b"]
+#s = list("abcde")
+
+goal = 1000000000
+found = []
+for i in range( goal ):
+    if "".join(s) in found:
+        break
+    found.append("".join(s))
+    for instruction in data:
+        if instruction[0] == "s":
+            s = spin( s, int(instruction[1:]) )
+        elif instruction[0] == "x":
+            s = exchange( s, *instruction[1:].split("/") )
+        else:
+            s = partner( s, *instruction[1:].split("/") )
+
+print( found[ goal - (goal // len(found)) * len(found) ] )
