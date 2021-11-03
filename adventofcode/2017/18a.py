@@ -42,3 +42,82 @@ At the time the recover operation is executed, the frequency of the last sound p
 What is the value of the recovered frequency (the value of the most recently played sound) the first time a rcv instruction is executed with a non-zero value?
 """
 
+def send_command(c, args, r):
+    for e in args:
+        if not e.isdigit() and not e.startswith("-"):
+            if e not in r:
+                r[e] = 0
+
+    #print(f"{c}:{args}, r={r}")
+
+    if c == "snd":
+        if args[0].isdigit() or args[0].startswith("-"):
+            print( f"snd: {args[0]}" )
+        else:
+            print( f"snd: {r[args[0]]}" )
+
+    elif c == "set":
+        if args[1].isdigit() or args[1].startswith("-"):
+            r[args[0]] = int(args[1])
+        else:
+            r[args[0]] = r[args[1]]
+
+    elif c == "add":
+        if args[1].isdigit() or args[1].startswith("-"):
+            r[args[0]] += int(args[1])
+        else:
+            r[args[0]] += r[args[1]]
+
+    elif c == "mul":
+        if args[1].isdigit() or args[1].startswith("-"):
+            r[args[0]] *= int(args[1])
+        else:
+            r[args[0]] *= r[args[1]]
+
+    elif c == "mod":
+        if args[1].isdigit() or args[1].startswith("-"):
+            r[args[0]] %= int(args[1])
+        else:
+            r[args[0]] %= r[args[1]]
+
+    elif c == "rcv":
+        if r[args[0]] != 0:
+            exit(0)
+
+    elif c == "jgz":
+        if args[0].isdigit() or args[0].startswith("-"):
+            test = int(args[0])
+        else:
+            test = r[args[0]]
+        if test > 0:
+            if args[1].isdigit() or args[1].startswith("-"):
+                return int(args[1])
+            else:
+                return r[args[1]]
+
+    return 1
+
+data = []
+with open("data/18.data", "r") as f:
+    for line in f:
+        data.append(line.strip())
+
+#data = ["set a 1", "add a 2", "mul a a", "mod a 5", "snd a", "set a 0", "rcv a", "jgz a -1", "set a 1", "jgz a -2"]
+
+commands = []
+
+for line in data:
+    command, *args = line.split(" ")
+    commands.append( (command, args) )    
+
+regs = {}
+i = 0
+last_snd = 0
+
+while True:
+    if i < 0 or i >= len(commands):
+        break
+
+    command, args = commands[i]
+    jump = send_command(command, args, regs)
+    i += jump
