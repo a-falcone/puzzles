@@ -3,8 +3,12 @@
 """
 """
 
-if __name__ == "__main__":
+def load_data(filename):
     data = []
+    with open(filename, "r") as f:
+        for line in f:
+            pass
+    return data
 
-    with open("01.data", "r") as f:
-        pass
+if __name__ == "__main__":
+    data = load_data("01.data")
