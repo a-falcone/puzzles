@@ -75,30 +75,24 @@ def load_data(filename):
 if __name__ == "__main__":
     data = load_data("03.data")
 
-    oxygen = data[:]
+    oxygen,co2 = data[:],data[:]
     for i in range(len(data[0])):
-        ones = 0
+        o0, o1, c0, c1 = [], [], [], []
         for line in oxygen:
-            if line[i] == "1":
-                ones += 1
-        if ones >= len(oxygen)/2:
-            oxygen = [line for line in oxygen if line[i] == "1"]
-        else:
-            oxygen = [line for line in oxygen if line[i] == "0"]
-        if len(oxygen) == 1:
-            break
-
-    co2 = data[:]
-    for i in range(len(data[0])):
-        ones = 0
+            if line[i] == "0":
+                o0.append(line)
+            else:
+                o1.append(line)
         for line in co2:
-            if line[i] == "1":
-                ones += 1
-        if ones < len(co2)/2:
-            co2 = [line for line in co2 if line[i] == "1"]
-        else:
-            co2 = [line for line in co2 if line[i] == "0"]
-        if len(co2) == 1:
+            if line[i] == "0":
+                c0.append(line)
+            else:
+                c1.append(line)
+
+        oxygen = o1 if len(o1) >= len(o0) else o0
+        if(len(co2)>1):
+            co2 = c0 if len(c0) <= len(c1) else c1
+        if len(oxygen)*len(co2) == 1:
             break
     
     print(int(oxygen[0],2) * int(co2[0],2))
