@@ -127,8 +127,6 @@ def load_data(filename):
             data.append(line.strip())
     return data
 
-DEFS = [set(list(i)) for i in ["abcefg", "cf", "acdeg", "acdfg", "bcdf", "abdfg", "abdefg", "acf", "abcdefg", "abcdfg"]]
-
 def solve(keys, targets):
     m,n = {},[0 for i in range(10)]
     #unique number of segments
