@@ -108,16 +108,12 @@ def process(data):
     for line in data:
         a,b = line.split("-")
         if a != "end" and b != "start":
-            if a not in m:
-                m[a] = set([b])
-            else:
-                m[a].add(b)
+            m[a] = m.get(a, set())
+            m[a].add(b)
     
         if a != "start" and b != "end":
-            if b not in m:
-                m[b] = set([a])
-            else:
-                m[b].add(a)
+            m[b] = m.get(b, set())
+            m[b].add(a)
 
     return m
 
