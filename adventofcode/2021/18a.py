@@ -157,13 +157,19 @@ from math import floor, ceil
 
 class Snum:
     def __init__(self, s, leaf, parent):
+        self.left, self.right = None, None
+        self.leaf = leaf
+        self.parent = parent
+
         if type(parent) is not Snum and parent is not None:
             raise TypeError(f"Parent issues: {parent=}")
+
         if type(s) is not list or len(s) != 2:
             raise TypeError(f"snum format issue: {s=}")
+
         if leaf != "R" and leaf != "L" and leaf is not None:
             raise TypeError(f"leaf issue: {leaf=}")
-        self.leaf = leaf
+
         if type(s[0]) is list:
             self.left = Snum(s[0],"L",self)
         elif type(s[0]) is int:
@@ -173,6 +179,7 @@ class Snum:
             self.left.leaf = "L"
         else:
             raise TypeError(f"Left element issue: {s[0]=}")
+
         if type(s[1]) is list:
             self.right = Snum(s[1],"R",self)
         elif type(s[1]) is int:
@@ -184,7 +191,7 @@ class Snum:
             raise TypeError(f"Right element issue: {s[1]=}")
 
     def __repr__(self):
-        return f"S[{self.left},{self.right}]"
+        return f"[{self.left},{self.right}]"
 
     def mag(self):
         if type(self.left) is Snum:
@@ -196,23 +203,97 @@ class Snum:
         else:
             return mag + 2*self.right
 
+    def depth(self):
+        d = 1
+        n = self
+        while n.parent is not None:
+            n = n.parent
+            d += 1
+        return d
+
     def reduce(self):
         changed = True
         while changed:
+            print(self)
             while changed:
                 changed = self.explode()
+                print(self)
             changed = self.split()
 
     def explode(self):
-        changed = False
-        pass
-        return changed
+        if self.depth() > 4:
+            print(f"exploding {self=}")
+            if type(self.left) is Snum or type(self.right) is Snum:
+                raise TypeError(f"TOO DEEP: {Snum.left, Snum.right}")
+            l, r = self.left, self.right
+            if self.leaf == "L":
+                n = self.parent
+                m = self.parent
+                n.left = 0
+                #add the right value to leftmost leaf
+                if type(n.right) is int:
+                    n.right += r
+                else:
+                    n = n.right
+                    while type(n.left) is not int:
+                        n = n.left
+                    n.left += r
+                #add the left value to rightmost leaf
+                pass
+                while m is not None and m.leaf != "R":
+                    m = m.parent
+                if m is not None:
+                    if type(m.left) is int:
+                        m.left += l
+                    else:
+                        while type(m.right) is Snum:
+                            m = m.right
+                        m.right += l
+
+            elif self.leaf == "R":
+                n = self.parent
+                m = self.parent
+                n.right = 0
+                #add the left value to rightmost leaf
+                if type(n.left) is int:
+                    n.left += l
+                else:
+                    n = n.left
+                    while type(n.right) is not int:
+                        n = n.right
+                    n.right += l
+                #add the right value to leftmost leaf
+                pass
+                while m is not None and m.leaf != "L":
+                    m = m.parent
+                if m is not None:
+                    if type(m.right) is int:
+                        m.right += r
+                    else:
+                        while type(m.left) is Snum:
+                            m = m.left
+                        m.left += r
+
+            else:
+                raise TypeError(f"invalid leaf: {self.leaf=}")
+            return True
+
+        if type(self.left) is Snum:
+            if self.left.explode():
+                return True
+
+        if type(self.right) is Snum:
+            if self.right.explode():
+                return True
+
+        return False
 
     def split(self):
         if type(self.left) is Snum:
             if self.left.split():
                 return True
         elif type(self.left) is int and self.left > 9:
+            print(f"splitting left {self=}")
             self.left = Snum([floor(self.left/2),ceil(self.left/2)], "L", self)
             return True
 
@@ -220,6 +301,7 @@ class Snum:
             if self.right.split():
                 return True
         elif type(self.right) is int and self.right > 9:
+            print(f"splitting right {self=}")
             self.right = Snum([floor(self.right/2),ceil(self.right/2)], "R", self)
             return True
 
@@ -227,14 +309,17 @@ class Snum:
 
     def __add__(self, other):
         if type(other) is not Snum:
-            raise TypeError
-        self.leaf = "L"
-        other.leaf = "R"
+            raise TypeError(f"Can not add {type(other)} to Snum")
         s = Snum([self,other],None,None)
-        s.left.parent = self
-        s.right.parent = self
+        self.parent = s
+        self.leaf = "L"
+        s.right.parent = s
+        s.right.leaf = "R"
         s.reduce()
         return s
+
+    def copy(self):
+        pass
 
 def load_data(filename):
     data = []
@@ -246,23 +331,14 @@ def load_data(filename):
 if __name__ == "__main__":
     data = load_data("18.data")
     data = [ "[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]", "[[[5,[2,8]],4],[5,[[9,9],0]]]", "[6,[[[6,2],[5,6]],[[7,6],[4,7]]]]", "[[[6,[0,7]],[0,9]],[4,[9,[9,0]]]]", "[[[7,[6,4]],[3,[1,3]]],[[[5,5],1],9]]", "[[6,[[7,3],[3,2]]],[[[3,8],[5,7]],4]]", "[[[[5,4],[7,7]],8],[[8,3],8]]", "[[9,3],[[9,9],[6,[4,9]]]]", "[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]", "[[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]", ]
-    #data = [ "[[[[4,3],4],4],[7,[[8,4],9]]]", "[1,1]" ]
+    data = [ "[[[[4,3],4],4],[7,[[8,4],9]]]", "[1,1]" ]
 
     numbers = []
     for line in data:
         numbers.append(Snum(json.loads(line),None,None))
 
-    s = Snum([0,0],None,None)
-    for n in numbers:
-        #print(n, n.mag())
+    s = numbers[0]
+    for n in numbers[1:]:
         s += n
         
-    #print(s, s.mag())
-    s = Snum([[[[0,7],4],[15,[0,13]]],[1,1]],None,None)
-    print(s)
-    s.split()
-    print(s)
-    s.split()
-    print(s)
-    s.split()
-    print(s)
+    print(s, s.mag())
