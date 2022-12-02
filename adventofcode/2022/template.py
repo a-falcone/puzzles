@@ -3,11 +3,11 @@
 """
 """
 
-def load_data(filename):
+def load_data(filename: str) -> list:
     data = []
     with open(filename, "r") as f:
         for line in f:
-            data.append(line)
+            data.append(line.rstrip())
     return data
 
 if __name__ == "__main__":
