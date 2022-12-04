@@ -11,4 +11,4 @@ def load_data(filename: str) -> list:
     return data
 
 if __name__ == "__main__":
-    data = load_data("01.data")
+    data = load_data("CHANGEME.data")
