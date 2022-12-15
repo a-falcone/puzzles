@@ -195,7 +195,7 @@ if __name__ == "__main__":
                 for y in range(smally, bigy + 1):
                     rocks.add((x,y))
 
-        maxy += 2
+    maxy += 2
 
     rest.add((500,0))
     minx, maxx = 500, 500
@@ -208,5 +208,5 @@ if __name__ == "__main__":
                 minx = min(minx,x)
                 maxx = max(maxx,x)
 
-    printfield(minx, maxx, miny, maxy, rocks, rest)
+    #printfield(minx, maxx, miny, maxy, rocks, rest)
     print(len(rest))
