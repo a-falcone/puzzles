@@ -41,4 +41,59 @@ def load_data(filename: str) -> list:
 
 if __name__ == "__main__":
     data = load_data("18.data")
-    data = load_data("18.test")
+
+    seen = set()
+    touching = set()
+
+    for line in data:
+        x,y,z = map(int,line.split(","))
+
+        #right
+        if (x+1,y,z,"l") in seen:
+            seen.remove((x+1,y,z,"l"))
+            touching.add((x+1,y,z,"l"))
+            touching.add((x,y,z,"r"))
+        else:
+            seen.add((x,y,z,"r"))
+
+        #left
+        if (x-1,y,z,"r") in seen:
+            seen.remove((x-1,y,z,"r"))
+            touching.add((x-1,y,z,"r"))
+            touching.add((x,y,z,"l"))
+        else:
+            seen.add((x,y,z,"l"))
+
+        #front
+        if (x,y+1,z,"b") in seen:
+            seen.remove((x,y+1,z,"b"))
+            touching.add((x,y+1,z,"b"))
+            touching.add((x,y,z,"f"))
+        else:
+            seen.add((x,y,z,"f"))
+
+        #back
+        if (x,y-1,z,"f") in seen:
+            seen.remove((x,y-1,z,"f"))
+            touching.add((x,y-1,z,"f"))
+            touching.add((x,y,z,"b"))
+        else:
+            seen.add((x,y,z,"b"))
+
+        #up
+        if (x,y,z+1,"d") in seen:
+            seen.remove((x,y,z+1,"d"))
+            touching.add((x,y,z+1,"d"))
+            touching.add((x,y,z,"u"))
+        else:
+            seen.add((x,y,z,"u"))
+
+        #down
+        if (x,y,z-1,"u") in seen:
+            seen.remove((x,y,z-1,"u"))
+            touching.add((x,y,z-1,"u"))
+            touching.add((x,y,z,"d"))
+        else:
+            seen.add((x,y,z,"d"))
+
+    print(len(seen))
