@@ -336,12 +336,82 @@ How many units tall will the tower of rocks be after 2022 rocks have stopped fal
 """
 
 def load_data(filename: str) -> list:
-    data = []
     with open(filename, "r") as f:
-        for line in f:
-            data.append(line.rstrip())
-    return data
+        line = f.read()
+        return line.rstrip()
+
+def printboard(board: set, maxheight: int, workingpiece: list, width: int):
+    print(f"maxheight = {maxheight}")
+    for y in range(maxheight + 6, 0, -1):
+        print("|", end ="")
+        for x in range(width):
+            if (x,y) in board:
+                print("#", end="")
+            elif [x,y] in workingpiece:
+                print("o", end="")
+            else:
+                print(".", end="")
+        print("|")
+    print(f"+{'-'*width}+")
+
+def shiftpiece(direction: str, workingpiece: list) -> list:
+    offset = 1
+    if direction == "<":
+        offset = -1
+    shiftedpiece = []
+    for c in workingpiece:
+        shiftedpiece.append([c[0] + offset, c[1]])
+    return shiftedpiece
+
+def droppiece(workingpiece: list) -> list:
+    shiftedpiece = []
+    for c in workingpiece:
+        shiftedpiece.append([c[0], c[1] - 1])
+    return shiftedpiece
 
 if __name__ == "__main__":
     data = load_data("17.data")
-    data = load_data("17.test")
+
+    WIDTH = 7
+    LASTPIECE = 2022
+    pieces = [
+                [[2,0], [3,0], [4,0], [5,0]],
+                [[3,0], [2,1], [3,1], [4,1], [3,2]],
+                [[2,0], [3,0], [4,0], [4,1], [4,2]],
+                [[2,0], [2,1], [2,2], [2,3]],
+                [[2,0], [3,0], [2,1], [3,1]]
+             ]
+
+    maxheight, piecenumber, inputpos, board = 0, 0, 0, set()
+
+    while piecenumber < LASTPIECE:
+        workingpiece = [c[:] for c in pieces[piecenumber % 5]]
+
+        for c in workingpiece:
+            c[1] += maxheight + 4
+
+        locked = False
+        while not locked:
+            direction = data[inputpos]
+            inputpos = (inputpos + 1) % len(data)
+
+            newloc = shiftpiece(direction, workingpiece)
+            for c in newloc:
+                if tuple(c) in board or c[0] < 0 or c[0] >= WIDTH:
+                    break
+            else:
+                workingpiece = newloc
+
+            newloc = droppiece(workingpiece) 
+            for c in newloc:
+                if tuple(c) in board or c[1] <= 0:
+                    locked = True
+                    for d in workingpiece:
+                        board.add(tuple(d))
+                        maxheight = max(maxheight, d[1])
+                    break
+            else:
+                workingpiece = newloc
+
+        piecenumber += 1
+    print(maxheight)
