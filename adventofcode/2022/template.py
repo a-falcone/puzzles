@@ -12,3 +12,4 @@ def load_data(filename: str) -> list:
 
 if __name__ == "__main__":
     data = load_data("CHANGEME.data")
+    data = load_data("CHANGEME.test")
