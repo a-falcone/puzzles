@@ -50,6 +50,38 @@ def load_data(filename: str) -> list:
             data.append(line.rstrip())
     return data
 
+def compute(tokens: list, yelled: dict) -> int:
+    val1 = int(yelled[tokens[0]])
+    val2 = int(yelled[tokens[2]])
+    op = tokens[1]
+    if op == "+":
+        return val1 + val2
+    elif op == "-":
+        return val1 - val2
+    elif op == "*":
+        return val1 * val2
+    elif op == "/":
+        return val1 // val2
+
 if __name__ == "__main__":
     data = load_data("21.data")
-    data = load_data("21.test")
+
+    yelled = {}
+    monkeys = {}
+    for line in data:
+        monkey, rest = line.split(": ")
+        tokens = rest.split(" ")
+        if len(tokens) == 1:
+            yelled[monkey] = int(tokens[0])
+        else:
+            monkeys[monkey] = tokens
+
+    while "root" in monkeys:
+        for monkey, tokens in monkeys.items():
+            if tokens[0] in yelled and tokens[2] in yelled:
+                yelled[monkey] = compute(tokens, yelled)
+    
+        for monkey in yelled:
+            if monkey in monkeys:
+                monkeys.pop(monkey)
+    print(yelled["root"])
