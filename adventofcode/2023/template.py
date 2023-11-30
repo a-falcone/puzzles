@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-from icecream import ic
+"""
+"""
 
-"""
-"""
+from icecream import ic
 
 def load_data(filename: str) -> list:
     data = []
