@@ -73,7 +73,7 @@ if __name__ == "__main__":
             'zero': 0 
          }
     for line in data:
-        numbers = re.findall("\d|one|two|three|four|five|six|seven|eight|nine|zero", line)
+        numbers = re.findall("(?=(\d|one|two|three|four|five|six|seven|eight|nine|zero))", line)
         total += convert(numbers[0], h)*10 + convert(numbers[-1], h)
 
     print(total)
