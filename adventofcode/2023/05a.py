@@ -97,8 +97,6 @@ So, the lowest location number in this example is 35.
 What is the lowest location number that corresponds to any of the initial seed numbers?
 """
 
-from icecream import ic
-
 def load_data(filename: str) -> list:
     data = []
     with open(filename, "r") as f:

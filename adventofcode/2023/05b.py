@@ -111,8 +111,6 @@ In the above example, the lowest location number can be obtained from seed numbe
 Consider all of the initial seed numbers listed in the ranges on the first line of the almanac. What is the lowest location number that corresponds to any of the initial seed numbers?
 """
 
-from icecream import ic
-
 def load_data(filename: str) -> list:
     data = []
     with open(filename, "r") as f:
