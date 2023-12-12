@@ -76,7 +76,6 @@ def load_data(filename: str) -> list:
 
 if __name__ == "__main__":
     data = load_data("04.data")
-    #data = load_data("04.test")
 
     quantity = {}
     total = 0
