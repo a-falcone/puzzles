@@ -62,8 +62,6 @@ To summarize your pattern notes, add up the number of columns to the left of eac
 Find the line of reflection in each of the patterns in your notes. What number do you get after summarizing all of your notes?
 """
 
-from icecream import ic
-
 def load_data(filename: str) -> list:
     data = [[]]
     with open(filename, "r") as f:

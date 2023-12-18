@@ -66,8 +66,6 @@ In this example, the sum of these results is 1320. Unfortunately, the reindeer h
 Run the HASH algorithm on each step in the initialization sequence. What is the sum of the results? (The initialization sequence is one long line; be careful when copy-pasting it.)
 """
 
-from icecream import ic
-
 def load_data(filename: str) -> list:
     data = []
     with open(filename, "r") as f:

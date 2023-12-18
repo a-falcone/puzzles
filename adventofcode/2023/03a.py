@@ -31,7 +31,6 @@ In this schematic, two numbers are not part numbers because they are not adjacen
 Of course, the actual engine schematic is much larger. What is the sum of all of the part numbers in the engine schematic?
 """
 
-from icecream import ic
 import re
 
 def load_data(filename: str) -> list:
