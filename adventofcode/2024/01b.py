@@ -81,7 +81,7 @@ def load_data(filename: str) -> list:
     return [list1, list2]
 
 if __name__ == "__main__":
-    list1, list2 = load_data("01a.data")
+    list1, list2 = load_data("01.data")
 
     counts = {}
     for y in list2:

@@ -52,7 +52,7 @@ def load_data(filename: str) -> list:
     return [sorted(list1), sorted(list2)]
 
 if __name__ == "__main__":
-    list1, list2 = load_data("01a.data")
+    list1, list2 = load_data("01.data")
     distance=0
     for x,y in zip(list1,list2):
         distance += abs(x-y)
