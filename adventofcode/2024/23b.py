@@ -100,7 +100,7 @@ def load_data(filename: str) -> list:
 
 def bron_kerbosch(R, P, X, connections):
     if not P and not X:
-        return tuple(sorted(R))
+        return ",".join(sorted(R))
     X = X.copy()
     for v in P.copy():
         return bron_kerbosch(R | set([v]), P & connections[v], X & connections[v], connections)
@@ -115,4 +115,4 @@ if __name__ == "__main__":
     for c in connections:
         maximal_cliques.add(bron_kerbosch(set([c]), set(connections.keys()) & set(connections[c]), set(), connections))
 
-    print(",".join(max(maximal_cliques, key=lambda c: len(c))))
+    print(max(maximal_cliques, key=lambda c: len(c)))
