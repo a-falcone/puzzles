@@ -207,21 +207,53 @@ def load_data(filename: str) -> list:
 
 def simulate(circuits, x, y):
     circuits = circuits.copy()
+    values = {}
+
+    for i in range(45):
+        values[f'x{i:02}'] = (x >> i) & 1
+        values[f'y{i:02}'] = (y >> i) & 1
 
     while(circuits):
-    value, operand1, operator, operand2 = circuits.pop(0)
-    if operand1 in values and operand2 in values:
-        if operator == 'XOR':
-            values[value] = values[operand1] ^ values[operand2]
-        elif operator == 'OR':
-            values[value] = values[operand1] | values[operand2]
-        elif operator == 'AND':
-            values[value] = values[operand1] & values[operand2]
-    else:
-        circuits.append((value, operand1, operator, operand2))
+        value, operand1, operator, operand2 = circuits.pop(0)
+        if operand1 in values and operand2 in values:
+            if operator == 'XOR':
+                values[value] = values[operand1] ^ values[operand2]
+            elif operator == 'OR':
+                values[value] = values[operand1] | values[operand2]
+            elif operator == 'AND':
+                values[value] = values[operand1] & values[operand2]
+        else:
+            circuits.append((value, operand1, operator, operand2))
+
+    return values
+
+def full_test(circuits):
+    #all zeros
+    values = simulate(circuits, 0, 0)
+    for i in range(46):
+        z = f'z{i:02}'
+        if values[z] != 0:
+            print(f'All zeros test. {z} should be 0')
+
+    for i in range(45):
+        print(f"Testing x{i:02} and y{i:02}")
+        for x, y in (1,0), (0,1), (1,1):
+            values = simulate(circuits, x*2**i, y*2**i)
+            for testing in range(45):
+                if testing == i:
+                    testvalue = values[f'z{i:02}']
+                    if values[f'z{testing:02}'] != x ^ y:
+                        print(f'z{testing:02} - (x,y): ({x}, {y}). Expected: {x^y}, got {testvalue}.')
+                elif testing == i+1:
+                    testvalue = values[f'z{i+1:02}']
+                    if values[f'z{testing:02}'] != x & y:
+                        print(f'z{testing:02} - (x,y): ({x}, {y}). Expected: {x&y}, got {testvalue}.')
+                else:
+                    if values[f'z{testing:02}'] != 0:
+                        print(f'z{testing:02} - (x,y): ({x}, {y}). Expected: 0, got 1.')
+
 
 if __name__ == "__main__":
     circuits, values = load_data("24.data")
-    circuits, values = load_data("24.test")
 
-    
+    full_test(circuits)
