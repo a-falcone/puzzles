@@ -189,8 +189,7 @@ Your system of gates and wires has four pairs of gates which need their output w
 """
 
 def load_data(filename: str) -> list:
-    circuits = []
-    values = {}
+    circuits = {}
     with open(filename, "r") as f:
         for line in f:
             line = line.rstrip()
@@ -198,62 +197,112 @@ def load_data(filename: str) -> list:
                 continue
             parts = line.split()
             if len(parts) == 2:
-                values[parts[0][:-1]] = int(parts[1])
+                wire = parts[0][:-1]
+                circuits[wire] = int(parts[1])
             else:
-                operand1, operator, operand2, _, value = parts
-                circuits.append((value, operand1, operator, operand2))
+                a, op, b, _, wire = parts
+                circuits[wire] = {'a': a, 'b': b, 'op': op}
 
-    return circuits, values
+    return circuits
+
+def evaluate(circuits, wire):
+    if type(circuits[wire]) == int:
+        return circuits[wire]
+    else:
+        a = circuits[wire]['a']
+        op = circuits[wire]['op']
+        b = circuits[wire]['b']
+        if op == 'XOR':
+            return evaluate(circuits, a) ^ evaluate(circuits, b)
+        elif op == 'OR':
+            return evaluate(circuits, a) | evaluate(circuits, b)
+        elif op == 'AND':
+            return evaluate(circuits, a) & evaluate(circuits, b)
 
 def simulate(circuits, x, y):
     circuits = circuits.copy()
-    values = {}
 
     for i in range(45):
-        values[f'x{i:02}'] = (x >> i) & 1
-        values[f'y{i:02}'] = (y >> i) & 1
+        circuits[f'x{i:02}'] = (x >> i) & 1
+        circuits[f'y{i:02}'] = (y >> i) & 1
 
-    while(circuits):
-        value, operand1, operator, operand2 = circuits.pop(0)
-        if operand1 in values and operand2 in values:
-            if operator == 'XOR':
-                values[value] = values[operand1] ^ values[operand2]
-            elif operator == 'OR':
-                values[value] = values[operand1] | values[operand2]
-            elif operator == 'AND':
-                values[value] = values[operand1] & values[operand2]
-        else:
-            circuits.append((value, operand1, operator, operand2))
+    values = {} 
 
+    for i in range(46):
+        z = f'z{i:02}'
+        values[z] = evaluate(circuits, z)
     return values
 
 def full_test(circuits):
-    #all zeros
-    values = simulate(circuits, 0, 0)
+    score = 0
+    tested = simulate(circuits, 0, 0)
+
     for i in range(46):
         z = f'z{i:02}'
-        if values[z] != 0:
-            print(f'All zeros test. {z} should be 0')
+        if tested[z] != 0:
+            score += 1
+            #print(f'All zeros test. {z} should be 0')
 
     for i in range(45):
-        print(f"Testing x{i:02} and y{i:02}")
+        #print(f"Testing x{i:02} and y{i:02}")
         for x, y in (1,0), (0,1), (1,1):
-            values = simulate(circuits, x*2**i, y*2**i)
+            tested = simulate(circuits, x*2**i, y*2**i)
             for testing in range(45):
                 if testing == i:
-                    testvalue = values[f'z{i:02}']
-                    if values[f'z{testing:02}'] != x ^ y:
-                        print(f'z{testing:02} - (x,y): ({x}, {y}). Expected: {x^y}, got {testvalue}.')
+                    testvalue = tested[f'z{i:02}']
+                    if tested[f'z{testing:02}'] != x ^ y:
+                        #print(f'z{testing:02} - (x,y): ({x}, {y}). Expected: {x^y}, got {testvalue}.')
+                        score += 1
                 elif testing == i+1:
-                    testvalue = values[f'z{i+1:02}']
-                    if values[f'z{testing:02}'] != x & y:
-                        print(f'z{testing:02} - (x,y): ({x}, {y}). Expected: {x&y}, got {testvalue}.')
+                    testvalue = tested[f'z{i+1:02}']
+                    if tested[f'z{testing:02}'] != x & y:
+                        #print(f'z{testing:02} - (x,y): ({x}, {y}). Expected: {x&y}, got {testvalue}.')
+                        score += 1
                 else:
-                    if values[f'z{testing:02}'] != 0:
-                        print(f'z{testing:02} - (x,y): ({x}, {y}). Expected: 0, got 1.')
+                    if tested[f'z{testing:02}'] != 0:
+                        #print(f'z{testing:02} - (x,y): ({x}, {y}). Expected: 0, got 1.')
+                        score += 1
+    return score
 
+def swap_wires(circuits, wire1, wire2):
+    replacements = {wire1: wire2, wire2: wire1}
+    new_circuits = {}
+
+    for wire in circuits:
+        if wire in replacements:
+            new_circuits[replacements[wire]] = circuits[wire]
+        else:
+            new_circuits[wire] = circuits[wire]
+        
+    return new_circuits
+
+def show_circuit(circuits, wire, depth, maxdepth):
+    if depth == 0:
+        return
+    out = '    '*(maxdepth - depth)
+    out += f'{wire} <- '
+    circuit = circuits[wire]
+    if type(circuit) == int:
+        out += str(circuit)
+    else:
+        out += circuit['a'] + ' ' + circuit['op'] + ' ' + circuit['b']
+        print(out)
+        show_circuit(circuits, circuit['a'], depth - 1, maxdepth)
+        show_circuit(circuits, circuit['b'], depth - 1, maxdepth)
 
 if __name__ == "__main__":
-    circuits, values = load_data("24.data")
+    circuits = load_data("24.data")
 
-    full_test(circuits)
+    for i in range(46):
+        show_circuit(circuits, f'z{i:02}', 3, 3)
+    print(full_test(circuits))
+    circuits = swap_wires(circuits, 'z08', 'vvr')
+    print(full_test(circuits))
+    circuits = swap_wires(circuits, 'z28', 'tfb')
+    print(full_test(circuits))
+    circuits = swap_wires(circuits, 'rnq', 'bkr')
+    print(full_test(circuits))
+    circuits = swap_wires(circuits, 'mqh', 'z39')
+    print(full_test(circuits))
+
+    print(','.join(sorted(['z08', 'vvr', 'z28', 'tfb', 'rnq', 'bkr', 'mqh', 'z39'])))
