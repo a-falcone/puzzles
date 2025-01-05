@@ -89,6 +89,9 @@ In the above example, complexity of the five codes can be found by calculating 6
 Find the fewest number of button presses you'll need to perform in order to cause the robot in front of the door to type each code. What is the sum of the complexities of the five codes on your list?
 """
 
+NUMPAD = { '7': (0,0), '8': (0,1), '9': (0,2), '4': (1,0), '5': (1,1), '6': (1,2), '1': (2,0), '2': (2,1), '3': (2,2), '0': (3,1), 'A': (3,2) }
+DIRPAD = { '^': (0,1), 'A': (0,2), '<': (1,0), 'v': (1,1), '>': (1,2) }
+
 def load_data(filename: str) -> list:
     data = []
     with open(filename, "r") as f:
@@ -96,72 +99,62 @@ def load_data(filename: str) -> list:
             data.append(line.rstrip())
     return data
 
-def firstrun(code, pad, padloc):
-    pos = pad['A']
-    out = ''
+def follow_directions(directions, depth):
+    for _ in range(depth - 1):
+        directions = _follow_directions(directions, DIRPAD)
+    return _follow_directions(directions, NUMPAD)
+
+
+def _follow_directions(directions, pad):
+    output = ''
+    location = pad['A']
+    padrev = {v:k for k,v in pad.items()}
+    for d in directions:
+        if d == '<':
+            location = (location[0], location[1] - 1)
+        elif d == '>':
+            location = (location[0], location[1] + 1)
+        elif d == '^':
+            location = (location[0] - 1, location[1])
+        elif d == 'v':
+            location = (location[0] + 1, location[1])
+        elif d == 'A':
+            output += padrev[location]
+    return output
+
+def find_directions(code, depth):
+    code = _find_directions(code, NUMPAD)
+    for _ in range(depth - 1):
+        code = _find_directions(code, DIRPAD)
+    return code
+
+def _find_directions(code, pad):
+    output = ''
+    location = pad['A']
     for c in code:
-        dy = pad[c][0] - pos[0]
-        dx = pad[c][1] - pos[1]
-
-        if dy < 0:
-            vertical = '^'
+        dy = pad[c][0] - location[0]
+        dx = pad[c][1] - location[1]
+        ychar = 'v' if dy > 0 else '^'
+        xchar = '>' if dx > 0 else '<'
+        if (pad[c][0], location[1]) not in pad.values():
+            output += xchar*abs(dx) + ychar*abs(dy)
+        elif (location[0], pad[c][1]) not in pad.values():
+            output += ychar*abs(dy) + xchar*abs(dx)
+        elif dx < 0:
+            output += xchar*abs(dx) + ychar*abs(dy)
         else:
-            vertical = 'v'
-        if dx < 0:
-            horizontal = '<'
-        else:
-            horizontal = '>'
+            output += ychar*abs(dy) + xchar*abs(dx)
+        output += 'A'
+        location = pad[c]
 
-        if (pad[c][0], pos[1]) not in padloc:
-            out += 'L' + horizontal*abs(dx) + vertical*abs(dy)
-        elif (pos[0], pad[c][1]) not in padloc:
-            out += 'L' + vertical*abs(dy) + horizontal*abs(dx)
-        else:
-            out += horizontal*abs(dx) + vertical*abs(dy)
-        out += 'A'
-        pos = pad[c]
-
-    return out
-
-def reverseit(s):
-    i = s.find(s[-1])
-    return s[i:] + s[:i]
-
-def generate_steps(code, pad, padlocs):
-    out = ''
-    for segment in code.split('A')[:-1]:
-        if segment.startswith('L'):
-            segment = segment[1:]
-            try1 = firstrun(segment+'A', pad, padlocs)
-            try2 = firstrun(reverseit(segment)+'A', pad, padlocs)
-            if len(try1) < len(try2):
-                out += try1
-            else:
-                out += try2
-        else:
-            out += firstrun(segment+"A", pad, padlocs)
-    return out
+    return output
 
 if __name__ == "__main__":
     codes = load_data("21.data")
-    codes = load_data("21.test")
-
-    numpad = { '7': (0,0), '8': (0,1), '9': (0,2), '4': (1,0), '5': (1,1), '6': (1,2), '1': (2,0), '2': (2,1), '3': (2,2), '0': (3,1), 'A': (3,2) }
-    numpadlocs = set(numpad.values())
-    padpad = { '^': (0,1), 'A': (0,2), '<': (1,0), 'v': (1,1), '>': (1,2) }
-    padpadlocs = set(padpad.values())
 
     total = 0
     for code in codes:
-        val = int(code[:-1])
-        steps = firstrun(code, numpad, numpadlocs)
-        print(code, steps)
-
-        for _ in range(2):
-            steps = generate_steps(steps, padpad, padpadlocs)
-            print(code, steps, len(steps))
-        steps = steps.replace('L', '')
-        print(val, len(steps))
-        total += val * len(steps)
+        directions = find_directions(code, 3)
+        total += len(directions) * int(code[:-1])
 
     print(total)
