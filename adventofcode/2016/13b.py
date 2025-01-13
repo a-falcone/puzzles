@@ -36,6 +36,9 @@ Now, suppose you wanted to reach 7,4. The shortest route you could take is marke
 Thus, reaching 7,4 would take a minimum of 11 steps (starting from your current location, 1,1).
 
 What is the fewest number of steps required for you to reach 31,39?
+
+--- Part Two ---
+How many locations (distinct x,y coordinates, including your starting location) can you reach in at most 50 steps?
 """
 
 import functools
@@ -58,23 +61,24 @@ def is_valid(favnum, pos):
         total //= 2
     return valid
 
-def solve(favnum, finish):
-    queue = [((1,1),0)]
+def solve(favnum):
+    queue = [((1,1),50)]
     visited = set()
-    while True:
-        pos, dist = queue.pop(0)
+    while queue:
+        pos, depth = queue.pop(0)
         visited.add(pos)
-        if pos == finish:
-            return dist
+        if depth == 0:
+            continue
         for d in -1, 1:
             newpos = (pos[0] + d, pos[1])
             if is_valid(favnum, newpos) and newpos not in visited:
-                queue.append((newpos, dist+1))
+                queue.append((newpos, depth-1))
             newpos = (pos[0], pos[1] + d)
             if is_valid(favnum, newpos) and newpos not in visited:
-               queue.append((newpos, dist+1))
+                queue.append((newpos, depth-1))
+    return len(visited)
 
 if __name__ == "__main__":
-    favnum, finish = load_data("13.data"), (31,39)
+    favnum = load_data("13.data")
 
-    print(solve(favnum, finish))
+    print(solve(favnum))
