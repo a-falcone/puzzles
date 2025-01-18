@@ -29,12 +29,69 @@ Given your actual map, and starting from location 0, what is the fewest number o
 """
 
 def load_data(filename: str) -> list:
-    data = []
+    walls = set()
+    locations = {}
     with open(filename, "r") as f:
-        for line in f:
-            data.append(line.rstrip())
-    return data
+        for y, line in enumerate(f):
+            for x, c in enumerate(line.rstrip()):
+                if c == '#':
+                    walls.add((y,x))
+                elif c == '.':
+                    continue
+                else:
+                    locations[int(c)] = (y,x)
+    return walls, locations
+
+def find_dist(start, end, walls):
+    seen = set()
+    queue = [(start, 0)]
+    while True:
+        loc, dist = queue.pop(0)
+        if loc in seen:
+            continue
+        seen.add(loc)
+        if loc == end:
+            return dist
+        for d in -1, 1:
+            newloc = (loc[0] + d, loc[1])
+            if newloc not in walls and newloc not in seen:
+                queue.append((newloc, dist + 1))
+
+            newloc = (loc[0], loc[1] + d)
+            if newloc not in walls and newloc not in seen:
+                queue.append((newloc, dist + 1))
+
+def create_graph(walls, locations):
+    graph = {}
+    for start in locations.keys():
+        for end in locations.keys():
+            if start == end or (start, end) in graph:
+                continue
+            dist = find_dist(locations[start], locations[end], walls)
+            graph[(start, end)] = dist
+            graph[(end, start)] = dist
+    return graph
+
+def solve(graph, start):
+    locations = set()
+    for pair in graph.keys():
+        locations.add(pair[0])
+        locations.add(pair[1])
+    locations.remove(start)
+    queue = [((start,), locations.copy(), 0)]
+    while True:
+        visited, remaining, dist = queue.pop(0)
+        if not remaining:
+            return dist
+        for loc in remaining:
+            left = remaining.copy()
+            left.remove(loc)
+            queue.append((visited + (loc,), left, dist + graph[(visited[-1], loc)]))
+        queue.sort(key=lambda s: s[-1])
+
 
 if __name__ == "__main__":
-    data = load_data("24.data")
-    data = load_data("24.test")
+    walls, locations = load_data("24.data")
+
+    graph = create_graph(walls, locations)
+    print(solve(graph, 0))
