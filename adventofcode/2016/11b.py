@@ -101,6 +101,19 @@ F1 .  .  .  .  .
 In this arrangement, it takes 11 steps to collect all of the objects at the fourth floor for assembly. (Each elevator stop counts as one step, even if nothing is added to or removed from it.)
 
 In your situation, what is the minimum number of steps required to bring all of the objects to the fourth floor?
+
+--- Part Two ---
+You step into the cleanroom separating the lobby from the isolated area and put on the hazmat suit.
+
+Upon entering the isolated containment area, however, you notice some extra parts on the first floor that weren't listed on the record outside:
+
+An elerium generator.
+An elerium-compatible microchip.
+A dilithium generator.
+A dilithium-compatible microchip.
+These work just like the other generators and microchips. You'll have to get them up to assembly as well.
+
+What is the minimum number of steps required to bring all of the objects, including these four new ones, to the fourth floor?
 """
 
 import re
@@ -154,6 +167,22 @@ def move_to(original, destination, *indexes):
         original.pop(index)
     return tuple(sorted(original)), tuple(sorted(destination))
 
+def flatten(state):
+    elevator = state[0]
+    state = state[1:]
+    flat = (elevator,)
+    mapping = {}
+    m = 0
+    for floor in state:
+        flat_floor = []
+        for thing in floor:
+            if thing[0] not in mapping:
+                mapping[thing[0]] = str(m)
+                m += 1
+            flat_floor.append(mapping[thing[0]] + thing[1])
+        flat += (tuple(sorted(flat_floor)),)
+    return flat
+
 def solve(state):
     MAX_FLOOR = len(state) - 1
     seen = set()
@@ -162,9 +191,10 @@ def solve(state):
         working, depth = queue.pop(0)
         if is_solved(working):
             return depth
-        if working in seen:
+        flat = flatten(working)
+        if flat in seen:
             continue
-        seen.add(working)
+        seen.add(flat)
         current_floor_num = working[0]
         for d in -1, 1:
             new_floor_num = current_floor_num + d
@@ -197,6 +227,6 @@ def solve(state):
 
 
 if __name__ == "__main__":
-    state = load_data("11.data")
+    state = load_data("11.data2")
 
     print(solve(state))
