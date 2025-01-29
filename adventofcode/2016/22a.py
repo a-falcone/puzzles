@@ -20,13 +20,32 @@ The data on node A (its Used) would fit on node B (its Avail).
 How many viable pairs of nodes are there?
 """
 
+import re
+
 def load_data(filename: str) -> list:
-    data = []
+    data = {}
     with open(filename, "r") as f:
         for line in f:
-            data.append(line.rstrip())
+            m = re.match(r'.*x(\d+)-y(\d+)\s+(\d+)T\s+(\d+)T\s+(\d+)T', line)
+            if m:
+                x = int(m.group(1))
+                y = int(m.group(2))
+                size = int(m.group(3))
+                used = int(m.group(4))
+                avail = int(m.group(5))
+                data[(x,y)] = {'size': size, 'used': used, 'avail': avail}
     return data
 
 if __name__ == "__main__":
     data = load_data("22.data")
-    data = load_data("22.test")
+
+    answer = 0
+    for a in data:
+        if data[a]['used'] == 0:
+            continue
+        for b in data:
+            if a == b:
+                continue
+            if data[a]['used'] <= data[b]['avail']:
+                answer += 1
+    print(answer)
