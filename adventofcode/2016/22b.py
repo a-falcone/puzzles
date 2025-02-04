@@ -94,13 +94,46 @@ So, after 7 steps, we've accessed the data we want. Unfortunately, each of these
 What is the fewest number of steps required to move your goal data to node-x0-y0?
 """
 
+import re
+
 def load_data(filename: str) -> list:
-    data = []
+    walls = set()
+    maxx = 0
     with open(filename, "r") as f:
         for line in f:
-            data.append(line.rstrip())
-    return data
+            m = re.match(r'.*x(\d+)-y(\d+)\s+(\d+)T\s+(\d+)T', line)
+            if m:
+                x = int(m.group(1))
+                maxx = max(x, maxx)
+                y = int(m.group(2))
+                used = int(m.group(4))
+                if used > 100:
+                    walls.add((x, y))
+                elif used == 0:
+                    free = (x, y)
+
+    return walls, free, maxx
+
+def dist(start, end, walls, maxx):
+    seen = set()
+    queue = [(start, 0)]
+    while True:
+        pos, depth = queue.pop(0)
+        if pos == end:
+            return depth
+        if pos in seen:
+            continue
+        seen.add(pos)
+        for d in (-1,0), (1,0), (0,-1):
+            newpos = (pos[0] + d[0], pos[1] + d[1])
+            if newpos in walls or newpos in seen or newpos[0] > maxx:
+                continue
+            queue.append((newpos, depth + 1))
+
 
 if __name__ == "__main__":
-    data = load_data("22.data")
-    data = load_data("22.test")
+    walls, free, maxx = load_data("22.data")
+
+    total = dist(free, (maxx - 1, 0), walls, maxx)
+    total += 1 + 5 * (maxx - 1)
+    print(total)
