@@ -29,12 +29,51 @@ What is the lowest positive integer that can be used to initialize register a an
 """
 
 def load_data(filename: str) -> list:
-    data = []
+    instructions = []
     with open(filename, "r") as f:
         for line in f:
-            data.append(line.rstrip())
-    return data
+            line = line.rstrip()
+            line = tuple(line.split())
+            instructions.append(line)
+    return tuple(instructions)
+
+def run_once(a, instructions):
+    def value(reg, x):
+        if x in reg:
+            return reg[x]
+        else:
+            return int(x)
+
+    reg = {'a': a, 'b': 0, 'c': 0, 'd': 0}
+    pointer = 0
+    expected = 0
+    while True:
+        instruction = instructions[pointer]
+        if instruction[0] == 'cpy':
+            reg[instruction[2]] = value(reg, instruction[1])
+        elif instruction[0] == 'inc':
+            reg[instruction[1]] += 1
+        elif instruction[0] == 'dec':
+            reg[instruction[1]] -= 1
+        elif instruction[0] == 'jnz':
+            if value(reg, instruction[1]) != 0:
+                pointer += int(instruction[2])
+                continue
+        elif instruction[0] == 'out':
+            if value(reg, instruction[1]) != expected:
+                return
+            expected = 1 - expected
+
+        pointer += 1
+
+
 
 if __name__ == "__main__":
-    data = load_data("CHANGEME.data")
-    data = load_data("CHANGEME.test")
+    instructions = load_data("25.data")
+
+    answer = 0
+    while True:
+        print(f"Working on {answer}...")
+        run_once(answer, instructions)
+        print("Failed.")
+        answer += 1
