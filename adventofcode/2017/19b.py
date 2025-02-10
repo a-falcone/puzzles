@@ -18,16 +18,16 @@ if __name__ == "__main__":
             pos = (0, x)
             break
 
+    count = 1
     d = (1,0)
     while True:
         c = data[pos]
-        if c not in ('-', '|', '+'):
-            print(c, end='')
 
         newpos = (pos[0] + d[0], pos[1] + d[1])
 
         if newpos in data:
             pos = newpos
+            count += 1
             continue
 
         if d in ((1,0), (-1,0)):
@@ -38,11 +38,12 @@ if __name__ == "__main__":
             newpos = (pos[0] + d[0], pos[1] + d[1])
             if newpos in data:
                 pos = newpos
+                count += 1
                 break
         else:
             break
 
-    print()
+    print(count)
 
 """
 --- Day 19: A Series of Tubes ---
